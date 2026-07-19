@@ -146,13 +146,13 @@ export async function generateInvoicePDF({
     );
 
     // Adjust width/height here if your logo appears too big/small
-    doc.addImage(
+   doc.addImage(
   logoData,
   "PNG",
   14,
-  16,
-  60,
-  25
+  14,
+  85,
+  38
 );
   } catch (error) {
     console.error(
