@@ -147,13 +147,13 @@ export async function generateInvoicePDF({
 
     // Adjust width/height here if your logo appears too big/small
     doc.addImage(
-      logoData,
-      "PNG",
-      14,
-      18,
-      52,
-      24
-    );
+  logoData,
+  "PNG",
+  14,
+  16,
+  60,
+  25
+);
   } catch (error) {
     console.error(
       "Could not load Eat One logo:",
