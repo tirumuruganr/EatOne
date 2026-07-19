@@ -83,7 +83,14 @@ export default function AdminInvoice() {
       }
 
       // Update order with paid status and invoice ID
-      setOrder(paid);
+      setOrder((currentOrder) => ({
+  ...currentOrder,
+  ...paid,
+  customer: paid.customer || currentOrder.customer,
+  items: paid.items || currentOrder.items,
+  shippingAmount: paid.shippingAmount ?? currentOrder.shippingAmount,
+  total: paid.total ?? currentOrder.total,
+}));
 
       setMessage(
         `Payment confirmed successfully. Invoice ${paid.invoiceId} generated. Click "Download Invoice PDF" to download it.`
