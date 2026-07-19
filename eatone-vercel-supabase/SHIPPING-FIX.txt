@@ -1,8 +1,0 @@
-Shipping fix:
-- Combined cart weight is calculated from every cart item's tier and quantity.
-- 500g + 750g + 750g = 2000g.
-- 2000g now correctly maps to the 2kg shipping slab.
-- Pincode 635601 maps to Tamil Nadu / South India.
-- South India 2kg shipping from the configured table = Rs.220.
-- Example items Rs.3047 + shipping Rs.220 = total Rs.3267.
-- Order ID + WhatsApp + admin invoice workflow retained.

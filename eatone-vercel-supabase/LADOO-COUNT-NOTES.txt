@@ -1,9 +1,0 @@
-Approximate ladoo counts added for larger sizes, following the existing 1 kg estimate of 66–70 pieces:
-1.5 kg: ~99–105
-2 kg: ~132–140
-2.5 kg: ~165–175
-3 kg: ~198–210
-3.5 kg: ~231–245
-4 kg: ~264–280
-4.5 kg: ~297–315
-5 kg: ~330–350

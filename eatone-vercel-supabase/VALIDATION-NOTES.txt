@@ -1,9 +1,0 @@
-Added checkout validation:
-- Name accepts letters, spaces, apostrophe, hyphen and period only.
-- Phone accepts digits only, maximum 10 digits, and validates Indian mobile numbers starting 6-9.
-- Pincode accepts digits only, exactly 6 digits, first digit non-zero.
-- Shipping is calculated only after a syntactically valid 6-digit pincode.
-- Order button remains disabled until customer details and shipping are valid.
-
-Note: This validates Indian PIN format and maps shipping by the region logic already in App.jsx.
-For authoritative serviceability of every Indian PIN, connect a courier/pincode database/API.

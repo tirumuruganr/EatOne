@@ -1,6 +1,0 @@
-Updates:
-- Business WhatsApp number changed to +91 91504 08320.
-- Admin page shows 'Send Invoice via WhatsApp' only after an invoice ID exists.
-- The button opens WhatsApp chat with the customer's phone number and prefilled Order ID, Invoice No and total.
-- Due to browser/WhatsApp security restrictions, a website cannot automatically attach a locally generated PDF to a wa.me link. Generate/download the PDF first, click Send Invoice via WhatsApp, then attach the downloaded PDF in WhatsApp before sending.
-- Invoice generator remains based on the uploaded reference invoice layout: branded header, billed-to section, item table, paid status, total, tagline and founder/signature area.

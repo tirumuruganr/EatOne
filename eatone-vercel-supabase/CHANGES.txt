@@ -1,6 +1,0 @@
-Changes:
-1. Renamed Post-Partum Gond Ladoo to Post-Partum Gond-Poppy Ladoo.
-2. Added shipping fallback for cart weights above configured slabs, preventing 'To be confirmed' solely due to larger combined cart weight.
-3. Added/retained 6-digit Indian PIN validation; 635601 passes format validation.
-4. Added larger-size approximate ladoo counts across product tiers, including Choco Hazelnut Ladoo.
-5. Added mobile revolving nutrient/ingredient ticker CSS to prevent ingredients such as sunflower and pumpkin seeds from remaining off-screen.
