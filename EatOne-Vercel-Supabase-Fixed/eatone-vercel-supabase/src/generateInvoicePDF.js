@@ -23,7 +23,7 @@ const BRAND_TAGLINE = "Healthy Delight Everyday";
  * @param {string} [params.deliveryPartner]
  * @param {string} [params.trackingId]
  */
-export function generateInvoicePDF({
+export async function generateInvoicePDF({
   status,
   invoiceNo,
   orderId,
@@ -40,6 +40,36 @@ export function generateInvoicePDF({
       unit: "mm",
       format: "a4",
     });
+
+    // Load Brilliant Signature font
+const fontResponse = await fetch("/Brilliant.ttf");
+
+if (!fontResponse.ok) {
+  throw new Error("Could not load Brilliant signature font");
+}
+
+const fontBuffer = await fontResponse.arrayBuffer();
+
+const fontBytes = new Uint8Array(fontBuffer);
+
+let binary = "";
+
+for (let i = 0; i < fontBytes.length; i++) {
+  binary += String.fromCharCode(fontBytes[i]);
+}
+
+const fontBase64 = btoa(binary);
+
+doc.addFileToVFS(
+  "Brilliant.ttf",
+  fontBase64
+);
+
+doc.addFont(
+  "Brilliant.ttf",
+  "Brilliant",
+  "normal"
+);
 
     const pageWidth = 210;
     let y;
