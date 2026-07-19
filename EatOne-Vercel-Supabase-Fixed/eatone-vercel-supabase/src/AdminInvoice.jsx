@@ -115,7 +115,7 @@ export default function AdminInvoice() {
   // DOWNLOAD INVOICE PDF
   // ==========================================
 
-  const downloadInvoice = () => {
+  const downloadInvoice = async () => {
     if (!order) {
       setMessage("Please find an order first.");
       return;
@@ -152,7 +152,7 @@ export default function AdminInvoice() {
         });
       }
 
-      const result = generateInvoicePDF({
+      const result = await generateInvoicePDF({
         status: "Paid",
 
         invoiceNo:
@@ -170,7 +170,7 @@ export default function AdminInvoice() {
           phone:
             order.customer?.phone || "",
 
-          line:
+          line:  
             order.customer?.line || "",
 
           pincode:
