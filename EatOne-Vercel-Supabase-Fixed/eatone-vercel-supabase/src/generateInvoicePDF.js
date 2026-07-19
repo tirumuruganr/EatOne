@@ -176,10 +176,10 @@ export async function generateInvoicePDF({
   // INVOICE DETAILS - TOP RIGHT
   // ============================================================
 
-  doc.setFont(
-    "LeagueSpartan",
-    "bold"
-  );
+ doc.setFont(
+  "Poppins",
+  "normal"
+);
 
   doc.setFontSize(10);
   doc.setTextColor(...BROWN);
