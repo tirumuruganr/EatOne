@@ -172,5 +172,41 @@ export function generateInvoicePDF({
   doc.setFillColor(...GREEN);
   doc.rect(0, 289, pageWidth, 8, "F");
 
-  doc.save(`EatOne-Invoice-${invoiceNo}.pdf`);
+  const pdfBlob = doc.output("blob");
+const pdfUrl = URL.createObjectURL(pdfBlob);
+
+const link = document.createElement("a");
+link.href = pdfUrl;
+link.download = `EatOne-Invoice-${invoiceNo}.pdf`;
+
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
+setTimeout(() => {
+  URL.revokeObjectURL(pdfUrl);
+}, 1000);
+
+
+
+
+  // Bottom brand bar
+doc.setFillColor(...GREEN);
+doc.rect(0, 289, pageWidth, 8, "F");
+
+// Force PDF download
+const pdfBlob = doc.output("blob");
+const pdfUrl = URL.createObjectURL(pdfBlob);
+
+const link = document.createElement("a");
+link.href = pdfUrl;
+link.download = `EatOne-Invoice-${invoiceNo}.pdf`;
+
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
+setTimeout(() => {
+  URL.revokeObjectURL(pdfUrl);
+}, 1000);
 }
