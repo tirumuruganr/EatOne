@@ -1,0 +1,17 @@
+ORDER ID + INVOICE WORKFLOW
+
+1. Customer completes cart and delivery details.
+2. Customer clicks Order via WhatsApp.
+3. Node.js backend creates a sequential Order ID:
+   EO-ORD-00001, EO-ORD-00002, etc.
+4. WhatsApp opens only after the backend returns the Order ID.
+5. The WhatsApp message contains the Order ID twice for visibility.
+6. After payment, admin opens /admin and searches using the Order ID.
+7. Admin confirms payment.
+8. A separate sequential Invoice ID is generated:
+   EO-INV-00001, EO-INV-00002, etc.
+9. Admin downloads the invoice and can send it to the customer's WhatsApp number.
+
+IMPORTANT:
+The Node.js backend must be running (`node server.js`) when the customer places an order,
+otherwise an Order ID cannot be generated.

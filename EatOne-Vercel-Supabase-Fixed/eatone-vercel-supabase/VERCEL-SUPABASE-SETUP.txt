@@ -1,0 +1,17 @@
+EAT ONE - Vercel + Supabase setup
+
+This version does NOT require server.js to be running.
+
+Required Vercel Environment Variables:
+1. SUPABASE_URL = your Supabase project URL (example: https://xxxx.supabase.co)
+2. SUPABASE_SERVICE_ROLE_KEY = your Supabase service_role secret key
+
+In Vercel: Project -> Settings -> Environment Variables.
+Add both variables for Production, Preview, and Development as needed, then redeploy.
+
+API flow:
+POST /api/orders -> creates order in Supabase and returns Order ID
+GET /api/orders?orderId=EO-ORD-xxxxx -> finds an order
+POST /api/invoice -> marks payment and generates invoice ID
+
+IMPORTANT: Never put SUPABASE_SERVICE_ROLE_KEY in frontend VITE_ variables or src files. It must remain a server-side Vercel environment variable.
