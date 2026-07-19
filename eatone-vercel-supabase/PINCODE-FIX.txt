@@ -1,0 +1,5 @@
+Fixed 6th-digit pincode crash:
+- Pincode is sanitized to 6 digits.
+- 635601 maps safely to Tamil Nadu / South India.
+- Shipping calculation is wrapped in try/catch so invalid or unsupported slabs do not crash React.
+- Shipping amount extraction is guarded against undefined values.

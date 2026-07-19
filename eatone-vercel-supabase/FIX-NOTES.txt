@@ -1,0 +1,5 @@
+Fixed blank-page runtime error:
+- Removed undefined totalLadooWeight reference.
+- Added totalWeightGrams derived safely from the cart.
+- Shipping calculation now uses totalWeightGrams.
+- Pincode 635601 continues to map to Tamil Nadu / South India.

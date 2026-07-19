@@ -1,0 +1,7 @@
+Clean rebuild based on the last working shipping version.
+- No JSX button or anchor handlers were modified.
+- Shipping 2kg / Rs.220 logic retained.
+- The existing working WhatsApp message generator now shows a prominent copyable Order ID.
+- No admin hyperlink is exposed.
+Note: This display Order ID is generated in the browser. For a fully persistent admin-searchable
+Order ID, the checkout flow must be refactored to await the backend before opening WhatsApp.

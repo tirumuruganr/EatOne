@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  margin: 0;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+
+/* Mobile revolving nutrient/ingredient text */
+@media (max-width: 640px) {
+  .nutrient-revolving {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+  }
+  .nutrient-revolving > * {
+    display: inline-block;
+    min-width: max-content;
+    padding-left: 100%;
+    animation: eatoneNutrientMarquee 16s linear infinite;
+  }
+}
+@keyframes eatoneNutrientMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
