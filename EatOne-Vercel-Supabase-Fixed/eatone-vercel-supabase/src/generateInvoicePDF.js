@@ -161,7 +161,7 @@ export async function generateInvoicePDF({
     );
 
     // Fallback if logo cannot load
-    doc.setFont("LeagueSpartan", "bold");
+    doc.setFont("Poppins", "normal");
     doc.setFontSize(25);
     doc.setTextColor(...BROWN);
 
