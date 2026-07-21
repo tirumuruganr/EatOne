@@ -11,7 +11,7 @@ const BRAND_TAGLINE = "Healthy Delight Everyday";
 const FSSAI_NUMBER = "21226008002884";
 
 // ============================================================
-// LOAD FONT / FILE AS BASE64
+// LOAD FONT FILE AS BASE64
 // ============================================================
 
 async function loadFileAsBase64(url) {
@@ -34,7 +34,7 @@ async function loadFileAsBase64(url) {
 }
 
 // ============================================================
-// LOAD IMAGE
+// LOAD IMAGE AS DATA URL
 // ============================================================
 
 async function loadImageAsDataURL(url) {
@@ -111,6 +111,7 @@ export async function generateInvoicePDF({
   const PAGE_WIDTH = 210;
   const PAGE_HEIGHT = 297;
 
+  // Every main horizontal line uses these same coordinates
   const LINE_LEFT = 14;
   const LINE_RIGHT = 196;
 
@@ -147,7 +148,10 @@ export async function generateInvoicePDF({
   let brilliantLoaded = false;
 
   // ==========================================================
-  // LOAD POPPINS
+  // LOAD POPPINS MEDIUM
+  //
+  // Exact filename:
+  // public/Poppins-Medium.ttf
   // ==========================================================
 
   try {
@@ -172,7 +176,7 @@ export async function generateInvoicePDF({
       "normal"
     );
 
-    // Test font
+    // Test whether jsPDF can actually use it
     doc.getTextWidth(
       "Poppins Test"
     );
@@ -186,7 +190,7 @@ export async function generateInvoicePDF({
     poppinsLoaded = false;
 
     console.error(
-      "Poppins failed:",
+      "Poppins failed - using Helvetica:",
       error
     );
 
@@ -200,22 +204,26 @@ export async function generateInvoicePDF({
   // LOAD LEAGUE SPARTAN BOLD
   //
   // IMPORTANT:
-  // This now uses the TTF version.
+  // This matches your EXACT filename:
+  //
+  // public/league-spartan-bold.ttf
+  //
+  // LOWERCASE!
   // ==========================================================
 
   try {
     const spartanBase64 =
       await loadFileAsBase64(
-        "/LeagueSpartan-Bold.ttf"
+        "/league-spartan-bold.ttf"
       );
 
     doc.addFileToVFS(
-      "LeagueSpartan-Bold.ttf",
+      "league-spartan-bold.ttf",
       spartanBase64
     );
 
     doc.addFont(
-      "LeagueSpartan-Bold.ttf",
+      "league-spartan-bold.ttf",
       "LeagueSpartan",
       "bold"
     );
@@ -225,7 +233,7 @@ export async function generateInvoicePDF({
       "bold"
     );
 
-    // Test font immediately
+    // Test whether jsPDF can use it
     doc.getTextWidth(
       "League Spartan Test"
     );
@@ -239,7 +247,7 @@ export async function generateInvoicePDF({
     spartanLoaded = false;
 
     console.error(
-      "League Spartan TTF failed:",
+      "League Spartan failed - using Helvetica Bold:",
       error
     );
 
@@ -251,6 +259,9 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // LOAD BRILLIANT SIGNATURE FONT
+  //
+  // Exact filename:
+  // public/Brilliant.ttf
   // ==========================================================
 
   try {
@@ -289,7 +300,7 @@ export async function generateInvoicePDF({
     brilliantLoaded = false;
 
     console.error(
-      "Brilliant failed:",
+      "Brilliant failed - using Helvetica Oblique:",
       error
     );
 
@@ -361,6 +372,9 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // LOGO
+  //
+  // Exact filename:
+  // public/eatone-logo.png
   // ==========================================================
 
   try {
@@ -383,6 +397,7 @@ export async function generateInvoicePDF({
       error
     );
 
+    // Fallback brand text
     boldFont();
 
     doc.setFontSize(27);
@@ -408,6 +423,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // DATE
+  // League Spartan Bold
   // ==========================================================
 
   const invoiceDate =
@@ -430,6 +446,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // INVOICE NUMBER
+  // League Spartan Bold
   // ==========================================================
 
   doc.setFontSize(11);
@@ -445,6 +462,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // STATUS
+  // League Spartan Bold
   // ==========================================================
 
   let displayStatus =
@@ -457,6 +475,8 @@ export async function generateInvoicePDF({
     displayStatus = "Paid";
   }
 
+  doc.setFontSize(11);
+
   doc.text(
     `Status: ${displayStatus}`,
     LINE_RIGHT,
@@ -467,13 +487,12 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FIRST DIVIDER
+  // FIRST HORIZONTAL LINE
   // ==========================================================
 
   let y = 52;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -485,6 +504,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // BILLED TO
+  // League Spartan Bold
   // ==========================================================
 
   y += 11;
@@ -501,6 +521,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER NAME
+  // Poppins
   // ==========================================================
 
   y += 8;
@@ -510,13 +531,16 @@ export async function generateInvoicePDF({
   doc.setFontSize(10.5);
 
   doc.text(
-    safeCustomer.name || "-",
+    String(
+      safeCustomer.name || "-"
+    ),
     LINE_LEFT,
     y
   );
 
   // ==========================================================
-  // ADDRESS
+  // CUSTOMER ADDRESS
+  // Poppins
   // ==========================================================
 
   y += 7;
@@ -527,8 +551,9 @@ export async function generateInvoicePDF({
     "-";
 
   let fullAddress =
-    address;
+    String(address);
 
+  // Add pincode only if it isn't already in the address
   if (
     safeCustomer.pincode &&
     !String(address).includes(
@@ -560,7 +585,8 @@ export async function generateInvoicePDF({
     ) * 6;
 
   // ==========================================================
-  // PHONE
+  // PHONE NUMBER
+  // Poppins
   // ==========================================================
 
   let customerPhone =
@@ -577,13 +603,14 @@ export async function generateInvoicePDF({
   }
 
   doc.text(
-    customerPhone,
+    String(customerPhone),
     LINE_LEFT,
     y
   );
 
   // ==========================================================
   // ORDER ID
+  // Poppins
   // ==========================================================
 
   if (orderId) {
@@ -597,13 +624,12 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // CUSTOMER DIVIDER
+  // CUSTOMER SECTION LINE
   // ==========================================================
 
   y += 9;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -621,12 +647,12 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // TABLE HEADER
+  // League Spartan Bold
   // ==========================================================
 
   boldFont();
 
   doc.setFontSize(10);
-
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -663,7 +689,6 @@ export async function generateInvoicePDF({
   y += 6;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -673,10 +698,12 @@ export async function generateInvoicePDF({
     y
   );
 
+  // Space before first row
   y += 11;
 
   // ==========================================================
-  // TABLE ITEMS
+  // PRODUCT / SHIPPING ROWS
+  // Poppins
   // ==========================================================
 
   normalFont();
@@ -708,24 +735,24 @@ export async function generateInvoicePDF({
           : "-";
 
       // ======================================================
-      // TEXT WRAPPING
+      // WRAP LONG TEXT
       // ======================================================
 
       const descriptionLines =
         doc.splitTextToSize(
-          description,
+          String(description),
           65
         );
 
       const categoryLines =
         doc.splitTextToSize(
-          category,
+          String(category),
           36
         );
 
       const quantityLines =
         doc.splitTextToSize(
-          quantity,
+          String(quantity),
           34
         );
 
@@ -738,7 +765,7 @@ export async function generateInvoicePDF({
         );
 
       // ======================================================
-      // DESCRIPTION
+      // DRAW DESCRIPTION
       // ======================================================
 
       doc.text(
@@ -748,7 +775,7 @@ export async function generateInvoicePDF({
       );
 
       // ======================================================
-      // CATEGORY
+      // DRAW CATEGORY
       // ======================================================
 
       doc.text(
@@ -758,7 +785,7 @@ export async function generateInvoicePDF({
       );
 
       // ======================================================
-      // QUANTITY
+      // DRAW QUANTITY
       // ======================================================
 
       doc.text(
@@ -768,7 +795,7 @@ export async function generateInvoicePDF({
       );
 
       // ======================================================
-      // AMOUNT
+      // DRAW AMOUNT
       // ======================================================
 
       doc.text(
@@ -793,7 +820,7 @@ export async function generateInvoicePDF({
       y += rowHeight;
 
       // ======================================================
-      // ROW DIVIDER
+      // LIGHT ROW SEPARATOR
       // ======================================================
 
       if (
@@ -827,7 +854,6 @@ export async function generateInvoicePDF({
   y += 2;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -839,6 +865,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // TOTAL
+  // League Spartan Bold
   // ==========================================================
 
   y += 12;
@@ -871,7 +898,6 @@ export async function generateInvoicePDF({
   y += 10;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -882,7 +908,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // OPTIONAL SHIPPING INFORMATION
+  // OPTIONAL DELIVERY / TRACKING INFORMATION
   // ==========================================================
 
   if (
@@ -930,6 +956,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // BRAND TAGLINE
+  // League Spartan Bold
   // ==========================================================
 
   y = Math.max(
@@ -937,7 +964,7 @@ export async function generateInvoicePDF({
     195
   );
 
-  // Prevent footer from moving too far down
+  // Prevent footer from being pushed too far down
   if (y > 215) {
     y = 215;
   }
@@ -945,7 +972,6 @@ export async function generateInvoicePDF({
   boldFont();
 
   doc.setFontSize(11);
-
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -958,13 +984,12 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // DIVIDER ABOVE ISSUED BY
+  // LINE ABOVE ISSUED BY
   // ==========================================================
 
   y += 12;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.35);
 
   doc.line(
@@ -976,6 +1001,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // ISSUED BY
+  // League Spartan Bold
   // ==========================================================
 
   y += 13;
@@ -991,7 +1017,8 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FOUNDER NAME - LEFT
+  // FOUNDER NAME - LEFT SIDE
+  // League Spartan Bold
   // ==========================================================
 
   y += 8;
@@ -1007,7 +1034,8 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FSSAI LICENSE NUMBER
+  // FSSAI LICENSE
+  // Poppins
   // ==========================================================
 
   y += 7;
@@ -1023,7 +1051,8 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // SIGNATURE
+  // SIGNATURE - RIGHT SIDE
+  // Brilliant.ttf
   // ==========================================================
 
   const signatureY =
@@ -1054,7 +1083,6 @@ export async function generateInvoicePDF({
     signatureY + 6;
 
   doc.setDrawColor(...BROWN);
-
   doc.setLineWidth(0.3);
 
   doc.line(
@@ -1066,6 +1094,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // FOUNDER ROLE
+  // League Spartan Bold
   // ==========================================================
 
   boldFont();
@@ -1101,8 +1130,7 @@ export async function generateInvoicePDF({
 
   const filename =
     `EatOne-Invoice-${
-      invoiceNo ||
-      "Invoice"
+      invoiceNo || "Invoice"
     }.pdf`;
 
   doc.save(filename);
