@@ -39,7 +39,8 @@ export default function AdminInvoice() {
 
       setMessage(
         `Could not find order: ${
-          error?.message || "Could not connect to the server."
+          error?.message ||
+          "Could not connect to the server."
         }`
       );
     }
@@ -59,7 +60,7 @@ export default function AdminInvoice() {
       setLoading(true);
       setMessage("");
 
-      // If invoice already exists, do not create another one
+      // Prevent duplicate invoice
       if (order.invoiceId) {
         setMessage(
           `Invoice ${order.invoiceId} already exists. Click "Download Invoice PDF".`
@@ -67,8 +68,8 @@ export default function AdminInvoice() {
         return;
       }
 
-      // Confirm payment and generate invoice ID
-      const paid = await confirmPayment(order.orderId);
+      const paid =
+        await confirmPayment(order.orderId);
 
       if (!paid) {
         throw new Error(
@@ -82,15 +83,26 @@ export default function AdminInvoice() {
         );
       }
 
-      // Update order with paid status and invoice ID
       setOrder((currentOrder) => ({
-  ...currentOrder,
-  ...paid,
-  customer: paid.customer || currentOrder.customer,
-  items: paid.items || currentOrder.items,
-  shippingAmount: paid.shippingAmount ?? currentOrder.shippingAmount,
-  total: paid.total ?? currentOrder.total,
-}));
+        ...currentOrder,
+        ...paid,
+
+        customer:
+          paid.customer ||
+          currentOrder.customer,
+
+        items:
+          paid.items ||
+          currentOrder.items,
+
+        shippingAmount:
+          paid.shippingAmount ??
+          currentOrder.shippingAmount,
+
+        total:
+          paid.total ??
+          currentOrder.total,
+      }));
 
       setMessage(
         `Payment confirmed successfully. Invoice ${paid.invoiceId} generated. Click "Download Invoice PDF" to download it.`
@@ -103,7 +115,8 @@ export default function AdminInvoice() {
 
       setMessage(
         `Could not confirm payment: ${
-          error?.message || "Unknown error"
+          error?.message ||
+          "Unknown error"
         }`
       );
     } finally {
@@ -112,12 +125,14 @@ export default function AdminInvoice() {
   };
 
   // ==========================================
-  // DOWNLOAD INVOICE PDF
+  // DOWNLOAD REAL INVOICE PDF
   // ==========================================
 
   const downloadInvoice = async () => {
     if (!order) {
-      setMessage("Please find an order first.");
+      setMessage(
+        "Please find an order first."
+      );
       return;
     }
 
@@ -137,58 +152,68 @@ export default function AdminInvoice() {
           : []),
       ];
 
-      // Add shipping charges to invoice
+      // Add shipping charge
       if (
         order.shippingAmount !== undefined &&
         order.shippingAmount !== null
       ) {
         invoiceItems.push({
-          description: "Shipping Charges",
-          category: "Logistics",
-          quantity: "1",
-          amount: Number(
-            order.shippingAmount
-          ),
+          description:
+            "Shipping Charges",
+
+          category:
+            "Logistics",
+
+          quantity:
+            "1",
+
+          amount:
+            Number(
+              order.shippingAmount
+            ),
         });
       }
 
-      const result = await generateInvoicePDF({
-        status: "Paid",
+      const result =
+        await generateInvoicePDF({
+          status: "Paid",
 
-        invoiceNo:
-          order.invoiceId,
+          invoiceNo:
+            order.invoiceId,
 
-        orderId:
-          order.orderId,
+          orderId:
+            order.orderId,
 
-        founderName,
+          founderName,
 
-        customer: {
-          name:
-            order.customer?.name || "",
+          customer: {
+            name:
+              order.customer?.name || "",
 
-          phone:
-            order.customer?.phone || "",
+            phone:
+              order.customer?.phone || "",
 
-          line:  
-            order.customer?.line || "",
+            line:
+              order.customer?.line || "",
 
-          pincode:
-            order.customer?.pincode || "",
-        },
+            pincode:
+              order.customer?.pincode || "",
+          },
 
-        items:
-          invoiceItems,
+          items:
+            invoiceItems,
 
-        total:
-          Number(order.total || 0),
+          total:
+            Number(
+              order.total || 0
+            ),
 
-        deliveryPartner:
-          order.deliveryPartner || "",
+          deliveryPartner:
+            order.deliveryPartner || "",
 
-        trackingId:
-          order.trackingId || "",
-      });
+          trackingId:
+            order.trackingId || "",
+        });
 
       if (result !== false) {
         setMessage(
@@ -207,7 +232,96 @@ export default function AdminInvoice() {
 
       setMessage(
         `PDF download failed: ${
-          error?.message || "Unknown error"
+          error?.message ||
+          "Unknown error"
+        }`
+      );
+    }
+  };
+
+  // ==========================================
+  // DOWNLOAD SAMPLE INVOICE
+  // ==========================================
+
+  const downloadSampleInvoice = async () => {
+    try {
+      setMessage("");
+
+      await generateInvoicePDF({
+        status: "Paid",
+
+        invoiceNo:
+          "EO-2026-00049",
+
+        // Blank intentionally to match sample
+        orderId: "",
+
+        founderName,
+
+        customer: {
+          name:
+            "Saniya Sohan Rawat",
+
+          phone:
+            "6294697057",
+
+          line:
+            "PSR Gents PG, 2nd cross road Channama Layout, Whitefield 560048, Bengaluru.",
+
+          pincode:
+            "560048",
+        },
+
+        items: [
+          {
+            description:
+              "Multi-nutritional Ladoo",
+
+            category:
+              "Nutrition",
+
+            quantity:
+              "500gm × 1",
+
+            amount:
+              699,
+          },
+
+          {
+            description:
+              "Shipping Charges",
+
+            category:
+              "Logistics",
+
+            quantity:
+              "1",
+
+            amount:
+              70,
+          },
+        ],
+
+        total: 769,
+
+        deliveryPartner: "",
+
+        trackingId: "",
+      });
+
+      setMessage(
+        "Sample invoice downloaded successfully."
+      );
+    } catch (error) {
+      console.error(
+        "Sample invoice generation failed:",
+        error
+      );
+
+      setMessage(
+        `Sample invoice failed: ${
+          error?.message ||
+          "Unknown error"
         }`
       );
     }
@@ -229,9 +343,10 @@ export default function AdminInvoice() {
       return;
     }
 
-    const phone = String(
-      order.customer.phone
-    ).replace(/\D/g, "");
+    const phone =
+      String(
+        order.customer.phone
+      ).replace(/\D/g, "");
 
     const fullPhone =
       phone.length === 10
@@ -272,8 +387,9 @@ export default function AdminInvoice() {
         color: "#2A2016",
       }}
     >
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl p-6 shadow-sm">
-
+      <div
+        className="max-w-2xl mx-auto bg-white rounded-2xl p-6 shadow-sm"
+      >
         <h1 className="text-2xl font-bold">
           EAT ONE — Order & Invoice Admin
         </h1>
@@ -283,10 +399,43 @@ export default function AdminInvoice() {
           enter the customer's Order ID.
         </p>
 
-        {/* ORDER SEARCH */}
+        {/* ==================================
+            SAMPLE INVOICE
+        ================================== */}
+
+        <div
+          className="mt-6 p-4 rounded-xl"
+          style={{
+            background: "#F8F3E9",
+          }}
+        >
+          <p className="font-bold">
+            Invoice Template Preview
+          </p>
+
+          <p className="text-sm opacity-70 mt-1">
+            Download the sample invoice to
+            check the logo, fonts and design.
+          </p>
+
+          <button
+            className="w-full rounded-full p-4 text-white font-bold mt-4"
+            style={{
+              background: "#3F6D3E",
+            }}
+            onClick={
+              downloadSampleInvoice
+            }
+          >
+            Download Sample Invoice Template
+          </button>
+        </div>
+
+        {/* ==================================
+            ORDER SEARCH
+        ================================== */}
 
         <div className="flex gap-2 my-6">
-
           <input
             className="flex-1 border rounded-lg p-3"
             value={orderId}
@@ -307,10 +456,11 @@ export default function AdminInvoice() {
           >
             Find Order
           </button>
-
         </div>
 
-        {/* STATUS MESSAGE */}
+        {/* ==================================
+            STATUS MESSAGE
+        ================================== */}
 
         {message && (
           <div
@@ -323,10 +473,11 @@ export default function AdminInvoice() {
           </div>
         )}
 
-        {/* ORDER DETAILS */}
+        {/* ==================================
+            ORDER DETAILS
+        ================================== */}
 
         {order && (
-
           <div className="space-y-2 border-t pt-5">
 
             <p>
@@ -377,7 +528,6 @@ export default function AdminInvoice() {
                       {item.amount}
 
                     </p>
-
                   )
                 )}
 
@@ -403,18 +553,15 @@ export default function AdminInvoice() {
             {/* INVOICE ID */}
 
             {order.invoiceId && (
-
               <p>
                 <b>Invoice ID:</b>{" "}
                 {order.invoiceId}
               </p>
-
             )}
 
             {/* CONFIRM PAYMENT */}
 
             {!order.invoiceId && (
-
               <button
                 className="w-full rounded-full p-4 text-white font-bold mt-5"
                 style={{
@@ -426,19 +573,15 @@ export default function AdminInvoice() {
                 }
                 disabled={loading}
               >
-
                 {loading
                   ? "Processing..."
                   : "Confirm Payment & Generate Invoice"}
-
               </button>
-
             )}
 
             {/* DOWNLOAD PDF */}
 
             {order.invoiceId && (
-
               <button
                 className="w-full rounded-full p-4 text-white font-bold mt-5"
                 style={{
@@ -451,13 +594,11 @@ export default function AdminInvoice() {
               >
                 Download Invoice PDF
               </button>
-
             )}
 
             {/* WHATSAPP */}
 
             {order.invoiceId && (
-
               <button
                 className="w-full rounded-full p-4 text-white font-bold mt-3"
                 style={{
@@ -470,11 +611,9 @@ export default function AdminInvoice() {
               >
                 Send Confirmation via WhatsApp
               </button>
-
             )}
 
           </div>
-
         )}
 
       </div>
