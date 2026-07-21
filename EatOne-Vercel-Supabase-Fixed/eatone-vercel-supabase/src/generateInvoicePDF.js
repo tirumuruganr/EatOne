@@ -169,7 +169,7 @@ export async function generateInvoicePDF({
     (SIGNATURE_LINE_START_X + SIGNATURE_LINE_END_X) / 2;
 
   const SIGNATURE_LINE_Y = 261;
-
+ 
   // ==========================================================
   // SIGNATURE IMAGE SETTINGS
   //
