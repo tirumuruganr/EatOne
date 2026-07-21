@@ -7,6 +7,7 @@ const BRAND_TAGLINE = "Healthy Delight Everyday";
 // ============================================================
 // LOAD FILE FROM PUBLIC FOLDER AS BASE64
 // ============================================================
+
 async function loadFileAsBase64(url) {
   const response = await fetch(url);
 
@@ -29,6 +30,7 @@ async function loadFileAsBase64(url) {
 // ============================================================
 // LOAD IMAGE FROM PUBLIC FOLDER AS DATA URL
 // ============================================================
+
 async function loadImageAsDataURL(url) {
   const response = await fetch(url);
 
@@ -51,6 +53,7 @@ async function loadImageAsDataURL(url) {
 // ============================================================
 // GENERATE INVOICE
 // ============================================================
+
 export async function generateInvoicePDF({
   status,
   invoiceNo,
@@ -71,7 +74,6 @@ export async function generateInvoicePDF({
   const pageWidth = 210;
   const pageHeight = 297;
 
-  // Safe defaults
   const safeCustomer = customer || {};
   const safeItems = Array.isArray(items) ? items : [];
   const safeTotal = Number(total || 0);
@@ -79,6 +81,9 @@ export async function generateInvoicePDF({
   // ============================================================
   // LOAD POPPINS FONT
   // ============================================================
+
+  let poppinsLoaded = false;
+
   try {
     const poppinsBase64 = await loadFileAsBase64(
       "/Poppins-Medium.ttf"
@@ -94,6 +99,8 @@ export async function generateInvoicePDF({
       "Poppins",
       "normal"
     );
+
+    poppinsLoaded = true;
   } catch (error) {
     console.error(
       "Could not load Poppins font:",
@@ -102,8 +109,39 @@ export async function generateInvoicePDF({
   }
 
   // ============================================================
+  // LOAD LEAGUE SPARTAN BOLD FONT
+  // ============================================================
+
+  let leagueSpartanLoaded = false;
+
+  try {
+    const leagueSpartanBase64 = await loadFileAsBase64(
+      "/LeagueSpartan-Bold.ttf"
+    );
+
+    doc.addFileToVFS(
+      "LeagueSpartan-Bold.ttf",
+      leagueSpartanBase64
+    );
+
+    doc.addFont(
+      "LeagueSpartan-Bold.ttf",
+      "LeagueSpartan",
+      "bold"
+    );
+
+    leagueSpartanLoaded = true;
+  } catch (error) {
+    console.error(
+      "Could not load League Spartan Bold font:",
+      error
+    );
+  }
+
+  // ============================================================
   // LOAD BRILLIANT SIGNATURE FONT
   // ============================================================
+
   let brilliantLoaded = false;
 
   try {
@@ -131,8 +169,29 @@ export async function generateInvoicePDF({
   }
 
   // ============================================================
+  // HELPER FONTS
+  // ============================================================
+
+  const setNormalFont = () => {
+    if (poppinsLoaded) {
+      doc.setFont("Poppins", "normal");
+    } else {
+      doc.setFont("helvetica", "normal");
+    }
+  };
+
+  const setBoldFont = () => {
+    if (leagueSpartanLoaded) {
+      doc.setFont("LeagueSpartan", "bold");
+    } else {
+      doc.setFont("helvetica", "bold");
+    }
+  };
+
+  // ============================================================
   // TOP BORDER
   // ============================================================
+
   doc.setFillColor(...BROWN);
 
   doc.rect(
@@ -146,6 +205,7 @@ export async function generateInvoicePDF({
   // ============================================================
   // LOGO
   // ============================================================
+
   try {
     const logoData = await loadImageAsDataURL(
       "/eatone-logo.png"
@@ -161,12 +221,12 @@ export async function generateInvoicePDF({
     );
   } catch (error) {
     console.error(
-      "Could not load Eat One logo:",
+      "Could not load EatOne logo:",
       error
     );
 
-    // Fallback logo text
-    doc.setFont("Poppins", "normal");
+    setBoldFont();
+
     doc.setFontSize(25);
     doc.setTextColor(...BROWN);
 
@@ -180,10 +240,8 @@ export async function generateInvoicePDF({
   // ============================================================
   // INVOICE DETAILS - TOP RIGHT
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setBoldFont();
 
   doc.setFontSize(9);
   doc.setTextColor(...BROWN);
@@ -216,27 +274,40 @@ export async function generateInvoicePDF({
     }
   );
 
-  doc.text(
-    `Order ID: ${orderId || "-"}`,
-    196,
-    34,
-    {
-      align: "right",
-    }
-  );
+  // Order ID is displayed only when available
+  if (orderId) {
+    doc.text(
+      `Order ID: ${orderId}`,
+      196,
+      34,
+      {
+        align: "right",
+      }
+    );
 
-  doc.text(
-    `Status: ${status || "-"}`,
-    196,
-    41,
-    {
-      align: "right",
-    }
-  );
+    doc.text(
+      `Status: ${status || "-"}`,
+      196,
+      41,
+      {
+        align: "right",
+      }
+    );
+  } else {
+    doc.text(
+      `Status: ${status || "-"}`,
+      196,
+      34,
+      {
+        align: "right",
+      }
+    );
+  }
 
   // ============================================================
   // FIRST DIVIDER
   // ============================================================
+
   let y = 48;
 
   doc.setDrawColor(...BROWN);
@@ -254,10 +325,8 @@ export async function generateInvoicePDF({
   // ============================================================
   // BILLED TO
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setBoldFont();
 
   doc.setFontSize(11);
   doc.setTextColor(...BROWN);
@@ -269,6 +338,9 @@ export async function generateInvoicePDF({
   );
 
   y += 7;
+
+  // Customer details use Poppins
+  setNormalFont();
 
   doc.setFontSize(9.5);
 
@@ -303,15 +375,21 @@ export async function generateInvoicePDF({
       billedAddrLines.length
     ) * 6;
 
-  doc.text(
-    `Pincode: ${
-      safeCustomer.pincode || "-"
-    }`,
-    14,
-    y
-  );
+  // Only show pincode separately if it isn't already in address
+  if (
+    safeCustomer.pincode &&
+    !String(address).includes(
+      String(safeCustomer.pincode)
+    )
+  ) {
+    doc.text(
+      `Pincode: ${safeCustomer.pincode}`,
+      14,
+      y
+    );
 
-  y += 6;
+    y += 6;
+  }
 
   const customerPhone =
     safeCustomer.phone || "-";
@@ -319,6 +397,8 @@ export async function generateInvoicePDF({
   doc.text(
     customerPhone === "-"
       ? "-"
+      : String(customerPhone).startsWith("+")
+      ? String(customerPhone)
       : `+91 ${customerPhone}`,
     14,
     y
@@ -335,15 +415,14 @@ export async function generateInvoicePDF({
     y
   );
 
-  y += 14;
+  // Give space before invoice table
+  y += 20;
 
   // ============================================================
   // TABLE HEADER
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setBoldFont();
 
   doc.setFontSize(10);
   doc.setTextColor(...BROWN);
@@ -391,10 +470,8 @@ export async function generateInvoicePDF({
   // ============================================================
   // TABLE ITEMS
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setNormalFont();
 
   doc.setFontSize(9);
 
@@ -408,6 +485,20 @@ export async function generateInvoicePDF({
         68
       );
 
+    const categoryLines =
+      doc.splitTextToSize(
+        row?.category || "-",
+        38
+      );
+
+    const quantityLines =
+      doc.splitTextToSize(
+        String(
+          row?.quantity || "-"
+        ),
+        35
+      );
+
     doc.text(
       descLines,
       14,
@@ -415,15 +506,13 @@ export async function generateInvoicePDF({
     );
 
     doc.text(
-      row?.category || "-",
+      categoryLines,
       90,
       y
     );
 
     doc.text(
-      String(
-        row?.quantity || "-"
-      ),
+      quantityLines,
       135,
       y
     );
@@ -431,7 +520,7 @@ export async function generateInvoicePDF({
     const amount =
       row?.amount !== null &&
       row?.amount !== undefined
-        ? `Rs. ${row.amount}`
+        ? `Rs. ${Number(row.amount)}`
         : "TBC";
 
     doc.text(
@@ -443,10 +532,31 @@ export async function generateInvoicePDF({
       }
     );
 
+    const rowHeight =
+      Math.max(
+        descLines.length,
+        categoryLines.length,
+        quantityLines.length,
+        1
+      ) * 6;
+
     y += Math.max(
-      8,
-      6 * descLines.length
+      10,
+      rowHeight
     );
+
+    // Row divider
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.2);
+
+    doc.line(
+      14,
+      y - 3,
+      196,
+      y - 3
+    );
+
+    doc.setDrawColor(...BROWN);
   });
 
   y += 2;
@@ -465,10 +575,8 @@ export async function generateInvoicePDF({
   // ============================================================
   // TOTAL
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setBoldFont();
 
   doc.setFontSize(12);
   doc.setTextColor(...BROWN);
@@ -502,14 +610,12 @@ export async function generateInvoicePDF({
   // ============================================================
   // SHIPPING DETAILS
   // ============================================================
+
   if (
     deliveryPartner ||
     trackingId
   ) {
-    doc.setFont(
-      "Poppins",
-      "normal"
-    );
+    setBoldFont();
 
     doc.setFontSize(10);
 
@@ -520,6 +626,8 @@ export async function generateInvoicePDF({
     );
 
     y += 7;
+
+    setNormalFont();
 
     doc.setFontSize(9);
 
@@ -549,15 +657,13 @@ export async function generateInvoicePDF({
   // ============================================================
   // TAGLINE
   // ============================================================
+
   y = Math.max(
     y + 12,
     190
   );
 
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+  setNormalFont();
 
   doc.setFontSize(12);
   doc.setTextColor(...BROWN);
@@ -587,10 +693,8 @@ export async function generateInvoicePDF({
   // ============================================================
   // ISSUED BY
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
+
+  setBoldFont();
 
   doc.setFontSize(10);
   doc.setTextColor(...BROWN);
@@ -603,6 +707,8 @@ export async function generateInvoicePDF({
 
   y += 7;
 
+  setNormalFont();
+
   doc.setFontSize(9.5);
 
   doc.text(
@@ -614,6 +720,7 @@ export async function generateInvoicePDF({
   // ============================================================
   // FOUNDER SIGNATURE
   // ============================================================
+
   if (brilliantLoaded) {
     doc.setFont(
       "Brilliant",
@@ -631,11 +738,7 @@ export async function generateInvoicePDF({
       }
     );
   } else {
-    // Fallback if Brilliant font fails
-    doc.setFont(
-      "Poppins",
-      "normal"
-    );
+    setNormalFont();
 
     doc.setFontSize(12);
 
@@ -666,12 +769,10 @@ export async function generateInvoicePDF({
   // ============================================================
   // FOUNDER LABEL
   // ============================================================
-  doc.setFont(
-    "Poppins",
-    "normal"
-  );
 
-  doc.setFontSize(9);
+  setBoldFont();
+
+  doc.setFontSize(10);
 
   doc.text(
     "Founder",
@@ -685,6 +786,7 @@ export async function generateInvoicePDF({
   // ============================================================
   // BOTTOM BORDER
   // ============================================================
+
   doc.setFillColor(...GREEN);
 
   doc.rect(
@@ -698,6 +800,7 @@ export async function generateInvoicePDF({
   // ============================================================
   // DOWNLOAD PDF
   // ============================================================
+
   const filename =
     `EatOne-Invoice-${
       invoiceNo || "Invoice"
