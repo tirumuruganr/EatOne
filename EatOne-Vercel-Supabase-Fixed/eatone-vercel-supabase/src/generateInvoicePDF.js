@@ -1,11 +1,11 @@
 import jsPDF from "jspdf";
 
 // ============================================================
-// EAT ONE - INVOICE PDF
+// EAT ONE - INVOICE PDF GENERATOR
 // ============================================================
 
 // ============================================================
-// BRAND SETTINGS
+// BRAND
 // ============================================================
 
 const BROWN = [42, 32, 22];
@@ -64,7 +64,7 @@ async function loadImageAsDataURL(url) {
 }
 
 // ============================================================
-// FORMAT MONEY
+// MONEY FORMAT
 // ============================================================
 
 function formatMoney(value) {
@@ -72,7 +72,7 @@ function formatMoney(value) {
 }
 
 // ============================================================
-// FORMAT DATE
+// DATE FORMAT
 // ============================================================
 
 function formatInvoiceDate() {
@@ -84,7 +84,7 @@ function formatInvoiceDate() {
 }
 
 // ============================================================
-// GENERATE INVOICE PDF
+// GENERATE INVOICE
 // ============================================================
 
 export async function generateInvoicePDF({
@@ -109,23 +109,66 @@ export async function generateInvoicePDF({
   });
 
   // ==========================================================
-  // PAGE SETTINGS
+  // PAGE DIMENSIONS
   // ==========================================================
 
   const PAGE_WIDTH = 210;
   const PAGE_HEIGHT = 297;
 
+  // ==========================================================
+  // COMMON LEFT / RIGHT ALIGNMENT
+  // ==========================================================
+
   const LINE_LEFT = 14;
   const LINE_RIGHT = 196;
 
   // ==========================================================
-  // TABLE COLUMN POSITIONS
+  // TABLE COLUMNS
   // ==========================================================
 
   const DESCRIPTION_X = 14;
   const CATEGORY_X = 88;
   const QUANTITY_X = 132;
   const AMOUNT_X = 190;
+
+  // ==========================================================
+  // CONSTANT SPACING
+  // ==========================================================
+
+  const TABLE_HEADER_TOP_GAP = 16;
+  const TABLE_HEADER_BOTTOM_GAP = 7;
+
+  const TABLE_FIRST_ROW_GAP = 11;
+
+  const TABLE_ROW_HEIGHT = 13;
+
+  const TOTAL_TOP_GAP = 12;
+  const TOTAL_BOTTOM_GAP = 12;
+
+  const TAGLINE_TOP_GAP = 18;
+  const TAGLINE_BOTTOM_GAP = 14;
+
+  // ==========================================================
+  // FIXED FOOTER
+  // ==========================================================
+
+  // Footer divider line
+  const FOOTER_LINE_Y = 241;
+
+  // Issued By starts here
+  const FOOTER_Y = 253;
+
+  // Bottom green bar
+  const BOTTOM_BAR_Y = PAGE_HEIGHT - 10;
+
+  // ==========================================================
+  // CONTENT LIMIT
+  //
+  // Products must stop before this position.
+  // This reserves room for Total + Tagline + Footer.
+  // ==========================================================
+
+  const ITEM_PAGE_LIMIT = 220;
 
   // ==========================================================
   // SAFE DATA
@@ -143,7 +186,7 @@ export async function generateInvoicePDF({
     founderName || "Manisha D Shetty";
 
   // ==========================================================
-  // FONT LOAD STATUS
+  // FONT STATUS
   // ==========================================================
 
   let leagueSpartanLoaded = false;
@@ -153,16 +196,7 @@ export async function generateInvoicePDF({
   let brilliantLoaded = false;
 
   // ==========================================================
-  // LOAD LEAGUE SPARTAN BOLD
-  //
-  // File:
-  // public/league-spartan-bold.ttf
-  //
-  // Used:
-  // Date
-  // Invoice No.
-  // Status
-  // Billed to
+  // LEAGUE SPARTAN BOLD
   // ==========================================================
 
   try {
@@ -192,13 +226,7 @@ export async function generateInvoicePDF({
     );
 
     leagueSpartanLoaded = true;
-
-    console.log(
-      "League Spartan loaded successfully"
-    );
   } catch (error) {
-    leagueSpartanLoaded = false;
-
     console.error(
       "League Spartan failed:",
       error
@@ -206,15 +234,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // LOAD POPPINS MEDIUM
-  //
-  // File:
-  // public/Poppins-Medium.ttf
-  //
-  // Used:
-  // Customer details
-  // Product rows
-  // FSSAI
+  // POPPINS MEDIUM
   // ==========================================================
 
   try {
@@ -244,13 +264,7 @@ export async function generateInvoicePDF({
     );
 
     poppinsMediumLoaded = true;
-
-    console.log(
-      "Poppins Medium loaded successfully"
-    );
   } catch (error) {
-    poppinsMediumLoaded = false;
-
     console.error(
       "Poppins Medium failed:",
       error
@@ -258,17 +272,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // LOAD POPPINS EXTRA BOLD
-  //
-  // File:
-  // public/Poppins-ExtraBold.ttf
-  //
-  // Used:
-  // Table headings
-  // Total
-  // Total price
-  // Issued By
-  // Founder
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
   try {
@@ -298,13 +302,7 @@ export async function generateInvoicePDF({
     );
 
     poppinsExtraBoldLoaded = true;
-
-    console.log(
-      "Poppins ExtraBold loaded successfully"
-    );
   } catch (error) {
-    poppinsExtraBoldLoaded = false;
-
     console.error(
       "Poppins ExtraBold failed:",
       error
@@ -312,13 +310,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // LOAD PODKOVA BOLD
-  //
-  // File:
-  // public/Podkova-Bold.ttf
-  //
-  // Used:
-  // Healthy Delight Everyday
+  // PODKOVA BOLD
   // ==========================================================
 
   try {
@@ -348,13 +340,7 @@ export async function generateInvoicePDF({
     );
 
     podkovaLoaded = true;
-
-    console.log(
-      "Podkova loaded successfully"
-    );
   } catch (error) {
-    podkovaLoaded = false;
-
     console.error(
       "Podkova failed:",
       error
@@ -362,13 +348,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // LOAD BRILLIANT
-  //
-  // File:
-  // public/Brilliant.ttf
-  //
-  // Used:
-  // Signature only
+  // BRILLIANT SIGNATURE FONT
   // ==========================================================
 
   try {
@@ -398,13 +378,7 @@ export async function generateInvoicePDF({
     );
 
     brilliantLoaded = true;
-
-    console.log(
-      "Brilliant loaded successfully"
-    );
   } catch (error) {
-    brilliantLoaded = false;
-
     console.error(
       "Brilliant failed:",
       error
@@ -471,33 +445,182 @@ export async function generateInvoicePDF({
     }
   };
 
-  const brilliantFont = () => {
-    if (brilliantLoaded) {
-      doc.setFont(
-        "Brilliant",
-        "normal"
-      );
-    } else {
-      doc.setFont(
-        "helvetica",
-        "oblique"
-      );
-    }
+  // ==========================================================
+  // DRAW TOP BAR
+  // ==========================================================
+
+  const drawTopBar = () => {
+    doc.setFillColor(...BROWN);
+
+    doc.rect(
+      0,
+      0,
+      PAGE_WIDTH,
+      10,
+      "F"
+    );
   };
 
   // ==========================================================
-  // TOP BROWN BAR
+  // DRAW BOTTOM BAR
   // ==========================================================
 
-  doc.setFillColor(...BROWN);
+  const drawBottomBar = () => {
+    doc.setFillColor(...GREEN);
 
-  doc.rect(
-    0,
-    0,
-    PAGE_WIDTH,
-    10,
-    "F"
-  );
+    doc.rect(
+      0,
+      BOTTOM_BAR_Y,
+      PAGE_WIDTH,
+      10,
+      "F"
+    );
+  };
+
+  // ==========================================================
+  // DRAW TABLE HEADER
+  // ==========================================================
+
+  const drawTableHeader = (startY) => {
+    let headerY = startY;
+
+    // --------------------------------------------------------
+    // Fixed gap above heading
+    // --------------------------------------------------------
+
+    headerY += TABLE_HEADER_TOP_GAP;
+
+    // --------------------------------------------------------
+    // Heading
+    // --------------------------------------------------------
+
+    poppinsBoldFont();
+
+    doc.setFontSize(10);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      "Description",
+      DESCRIPTION_X,
+      headerY
+    );
+
+    doc.text(
+      "Category",
+      CATEGORY_X,
+      headerY
+    );
+
+    doc.text(
+      "Quantity",
+      QUANTITY_X,
+      headerY
+    );
+
+    doc.text(
+      "Amount",
+      AMOUNT_X,
+      headerY,
+      {
+        align: "right",
+      }
+    );
+
+    // --------------------------------------------------------
+    // Fixed gap below heading
+    // --------------------------------------------------------
+
+    headerY += TABLE_HEADER_BOTTOM_GAP;
+
+    // --------------------------------------------------------
+    // Header bottom line
+    // --------------------------------------------------------
+
+    doc.setDrawColor(...BROWN);
+    doc.setLineWidth(0.35);
+
+    doc.line(
+      LINE_LEFT,
+      headerY,
+      LINE_RIGHT,
+      headerY
+    );
+
+    // --------------------------------------------------------
+    // Fixed gap to first row
+    // --------------------------------------------------------
+
+    headerY += TABLE_FIRST_ROW_GAP;
+
+    return headerY;
+  };
+
+  // ==========================================================
+  // NEW ITEM PAGE
+  // ==========================================================
+
+  const createNewItemPage = () => {
+    doc.addPage();
+
+    drawTopBar();
+    drawBottomBar();
+
+    // --------------------------------------------------------
+    // Continued invoice heading
+    // --------------------------------------------------------
+
+    leagueSpartanFont();
+
+    doc.setFontSize(11);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      `Invoice No. ${invoiceNo || "-"}`,
+      LINE_LEFT,
+      24
+    );
+
+    doc.text(
+      "Continued",
+      LINE_RIGHT,
+      24,
+      {
+        align: "right",
+      }
+    );
+
+    // --------------------------------------------------------
+    // Divider
+    // --------------------------------------------------------
+
+    doc.setDrawColor(...BROWN);
+    doc.setLineWidth(0.35);
+
+    doc.line(
+      LINE_LEFT,
+      32,
+      LINE_RIGHT,
+      32
+    );
+
+    // --------------------------------------------------------
+    // Repeat table heading
+    // --------------------------------------------------------
+
+    return drawTableHeader(32);
+  };
+
+  // ==========================================================
+  // FIRST PAGE TOP BAR
+  // ==========================================================
+
+  drawTopBar();
+
+  // ==========================================================
+  // FIRST PAGE BOTTOM BAR
+  // ==========================================================
+
+  drawBottomBar();
 
   // ==========================================================
   // LOGO
@@ -531,25 +654,21 @@ export async function generateInvoicePDF({
     doc.text(
       "EAT ONE",
       LINE_LEFT,
-      29
+      30
     );
   }
 
   // ==========================================================
   // DATE
-  // LEAGUE SPARTAN
   // ==========================================================
-
-  const invoiceDate =
-    formatInvoiceDate();
 
   leagueSpartanFont();
 
-  doc.setTextColor(...BROWN);
   doc.setFontSize(12);
+  doc.setTextColor(...BROWN);
 
   doc.text(
-    invoiceDate,
+    formatInvoiceDate(),
     LINE_RIGHT,
     20,
     {
@@ -559,7 +678,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // INVOICE NUMBER
-  // LEAGUE SPARTAN
   // ==========================================================
 
   leagueSpartanFont();
@@ -577,7 +695,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // STATUS
-  // LEAGUE SPARTAN
   // ==========================================================
 
   let displayStatus =
@@ -621,7 +738,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // BILLED TO
-  // LEAGUE SPARTAN
   // ==========================================================
 
   y += 11;
@@ -629,6 +745,7 @@ export async function generateInvoicePDF({
   leagueSpartanFont();
 
   doc.setFontSize(12);
+  doc.setTextColor(...BROWN);
 
   doc.text(
     "Billed to:",
@@ -638,7 +755,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER NAME
-  // POPPINS MEDIUM
   // ==========================================================
 
   y += 8;
@@ -657,27 +773,26 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER ADDRESS
-  // POPPINS MEDIUM
   // ==========================================================
 
   y += 7;
 
-  const address =
+  const customerAddress =
     safeCustomer.line ||
     safeCustomer.address ||
     "-";
 
   let fullAddress =
-    String(address);
+    String(customerAddress);
 
   if (
     safeCustomer.pincode &&
-    !String(address).includes(
+    !String(customerAddress).includes(
       String(safeCustomer.pincode)
     )
   ) {
     fullAddress =
-      `${address} - ${safeCustomer.pincode}`;
+      `${customerAddress} - ${safeCustomer.pincode}`;
   }
 
   const addressLines =
@@ -701,8 +816,7 @@ export async function generateInvoicePDF({
     ) * 6;
 
   // ==========================================================
-  // CUSTOMER PHONE
-  // POPPINS MEDIUM
+  // PHONE
   // ==========================================================
 
   let customerPhone =
@@ -726,7 +840,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // ORDER ID
-  // POPPINS MEDIUM
   // ==========================================================
 
   if (orderId) {
@@ -742,259 +855,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // CUSTOMER SECTION DIVIDER
-  // ==========================================================
-
-  y += 9;
-
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
-
-  // ==========================================================
-  // TABLE HEADER
-  // POPPINS EXTRA BOLD
-  // ==========================================================
-
-  y += 18;
-
-  poppinsBoldFont();
-
-  doc.setFontSize(10);
-  doc.setTextColor(...BROWN);
-
-  doc.text(
-    "Description",
-    DESCRIPTION_X,
-    y
-  );
-
-  doc.text(
-    "Category",
-    CATEGORY_X,
-    y
-  );
-
-  doc.text(
-    "Quantity",
-    QUANTITY_X,
-    y
-  );
-
-  doc.text(
-    "Amount",
-    AMOUNT_X,
-    y,
-    {
-      align: "right",
-    }
-  );
-
-  // ==========================================================
-  // TABLE HEADER DIVIDER
-  // ==========================================================
-
-  y += 6;
-
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
-
-  y += 11;
-
-  // ==========================================================
-  // PRODUCT / SHIPPING ROWS
-  // POPPINS MEDIUM
-  // ==========================================================
-
-  poppinsMediumFont();
-
-  doc.setFontSize(9.5);
-
-  safeItems.forEach(
-    (row, index) => {
-      const description =
-        row?.description || "-";
-
-      const category =
-        row?.category || "-";
-
-      const quantity =
-        String(
-          row?.quantity || "-"
-        );
-
-      const amount =
-        row?.amount !== undefined &&
-        row?.amount !== null
-          ? `Rs. ${formatMoney(row.amount)}`
-          : "-";
-
-      // ======================================================
-      // WRAP TEXT
-      // ======================================================
-
-      const descriptionLines =
-        doc.splitTextToSize(
-          String(description),
-          65
-        );
-
-      const categoryLines =
-        doc.splitTextToSize(
-          String(category),
-          36
-        );
-
-      const quantityLines =
-        doc.splitTextToSize(
-          String(quantity),
-          34
-        );
-
-      const maximumLines =
-        Math.max(
-          descriptionLines.length,
-          categoryLines.length,
-          quantityLines.length,
-          1
-        );
-
-      poppinsMediumFont();
-
-      // Description
-      doc.text(
-        descriptionLines,
-        DESCRIPTION_X,
-        y
-      );
-
-      // Category
-      doc.text(
-        categoryLines,
-        CATEGORY_X,
-        y
-      );
-
-      // Quantity
-      doc.text(
-        quantityLines,
-        QUANTITY_X,
-        y
-      );
-
-      // Amount
-      doc.text(
-        amount,
-        AMOUNT_X,
-        y,
-        {
-          align: "right",
-        }
-      );
-
-      // ======================================================
-      // ROW HEIGHT
-      // ======================================================
-
-      const rowHeight =
-        Math.max(
-          13,
-          maximumLines * 5 + 6
-        );
-
-      y += rowHeight;
-
-      // ======================================================
-      // ROW DIVIDER
-      // ======================================================
-
-      if (
-        index <
-        safeItems.length - 1
-      ) {
-        doc.setDrawColor(
-          215,
-          215,
-          215
-        );
-
-        doc.setLineWidth(0.15);
-
-        doc.line(
-          LINE_LEFT,
-          y - 4,
-          LINE_RIGHT,
-          y - 4
-        );
-      }
-    }
-  );
-
-  // ==========================================================
-  // LINE ABOVE TOTAL
-  // ==========================================================
-
-  y += 2;
-
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
-
-  // ==========================================================
-  // TOTAL
-  // POPPINS EXTRA BOLD
-  // ==========================================================
-
-  y += 12;
-
-  poppinsBoldFont();
-
-  doc.setFontSize(11);
-  doc.setTextColor(...BROWN);
-
-  doc.text(
-    "Total",
-    DESCRIPTION_X,
-    y
-  );
-
-  // ==========================================================
-  // TOTAL PRICE
-  // POPPINS EXTRA BOLD
-  // ==========================================================
-
-  poppinsBoldFont();
-
-  doc.text(
-    `Rs. ${formatMoney(safeTotal)}`,
-    AMOUNT_X,
-    y,
-    {
-      align: "right",
-    }
-  );
-
-  // ==========================================================
-  // LINE BELOW TOTAL
+  // CUSTOMER BOTTOM LINE
   // ==========================================================
 
   y += 10;
@@ -1010,18 +871,313 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // OPTIONAL SHIPPING DETAILS
+  // TABLE HEADER
+  // ==========================================================
+
+  y = drawTableHeader(y);
+
+  // ==========================================================
+  // PRODUCT ROWS
+  // ==========================================================
+
+  for (
+    let index = 0;
+    index < safeItems.length;
+    index++
+  ) {
+    const row =
+      safeItems[index] || {};
+
+    const description =
+      row.description || "-";
+
+    const category =
+      row.category || "-";
+
+    const quantity =
+      String(
+        row.quantity || "-"
+      );
+
+    const amount =
+      row.amount !== undefined &&
+      row.amount !== null
+        ? `Rs. ${formatMoney(row.amount)}`
+        : "-";
+
+    // ========================================================
+    // WRAP TEXT
+    // ========================================================
+
+    poppinsMediumFont();
+
+    doc.setFontSize(9.5);
+
+    const descriptionLines =
+      doc.splitTextToSize(
+        String(description),
+        65
+      );
+
+    const categoryLines =
+      doc.splitTextToSize(
+        String(category),
+        36
+      );
+
+    const quantityLines =
+      doc.splitTextToSize(
+        String(quantity),
+        34
+      );
+
+    const maximumLines =
+      Math.max(
+        descriptionLines.length,
+        categoryLines.length,
+        quantityLines.length,
+        1
+      );
+
+    // ========================================================
+    // CALCULATE ACTUAL ROW HEIGHT
+    // ========================================================
+
+    const calculatedRowHeight =
+      Math.max(
+        TABLE_ROW_HEIGHT,
+        maximumLines * 5 + 6
+      );
+
+    // ========================================================
+    // PAGE BREAK CHECK
+    // ========================================================
+
+    if (
+      y + calculatedRowHeight >
+      ITEM_PAGE_LIMIT
+    ) {
+      // ------------------------------------------------------
+      // Close current table
+      // ------------------------------------------------------
+
+      doc.setDrawColor(...BROWN);
+      doc.setLineWidth(0.35);
+
+      doc.line(
+        LINE_LEFT,
+        y - 5,
+        LINE_RIGHT,
+        y - 5
+      );
+
+      // ------------------------------------------------------
+      // New page + repeated heading
+      // ------------------------------------------------------
+
+      y = createNewItemPage();
+    }
+
+    // ========================================================
+    // DRAW ROW
+    // ========================================================
+
+    poppinsMediumFont();
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      descriptionLines,
+      DESCRIPTION_X,
+      y
+    );
+
+    doc.text(
+      categoryLines,
+      CATEGORY_X,
+      y
+    );
+
+    doc.text(
+      quantityLines,
+      QUANTITY_X,
+      y
+    );
+
+    doc.text(
+      amount,
+      AMOUNT_X,
+      y,
+      {
+        align: "right",
+      }
+    );
+
+    // ========================================================
+    // MOVE TO NEXT ROW
+    // ========================================================
+
+    y += calculatedRowHeight;
+
+    // ========================================================
+    // ROW DIVIDER
+    // ========================================================
+
+    if (
+      index <
+      safeItems.length - 1
+    ) {
+      doc.setDrawColor(
+        220,
+        220,
+        220
+      );
+
+      doc.setLineWidth(0.15);
+
+      doc.line(
+        LINE_LEFT,
+        y - 5,
+        LINE_RIGHT,
+        y - 5
+      );
+    }
+  }
+
+  // ==========================================================
+  // SPACE NEEDED AFTER PRODUCTS
+  //
+  // We need enough room for:
+  // table bottom
+  // total
+  // tagline
+  // footer
+  // ==========================================================
+
+  const REQUIRED_FINAL_SPACE = 85;
+
+  // ==========================================================
+  // IF FINAL SECTIONS DO NOT FIT, CREATE LAST PAGE
+  // ==========================================================
+
+  if (
+    y + REQUIRED_FINAL_SPACE >
+    FOOTER_LINE_Y
+  ) {
+    doc.addPage();
+
+    drawTopBar();
+    drawBottomBar();
+
+    // --------------------------------------------------------
+    // Invoice reference on final page
+    // --------------------------------------------------------
+
+    leagueSpartanFont();
+
+    doc.setFontSize(11);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      `Invoice No. ${invoiceNo || "-"}`,
+      LINE_LEFT,
+      24
+    );
+
+    doc.text(
+      "Invoice Summary",
+      LINE_RIGHT,
+      24,
+      {
+        align: "right",
+      }
+    );
+
+    doc.setDrawColor(...BROWN);
+    doc.setLineWidth(0.35);
+
+    doc.line(
+      LINE_LEFT,
+      32,
+      LINE_RIGHT,
+      32
+    );
+
+    y = 45;
+  }
+
+  // ==========================================================
+  // TABLE BOTTOM LINE
+  // ==========================================================
+
+  y += 3;
+
+  doc.setDrawColor(...BROWN);
+  doc.setLineWidth(0.35);
+
+  doc.line(
+    LINE_LEFT,
+    y,
+    LINE_RIGHT,
+    y
+  );
+
+  // ==========================================================
+  // TOTAL
+  // ==========================================================
+
+  y += TOTAL_TOP_GAP;
+
+  poppinsBoldFont();
+
+  doc.setFontSize(11);
+  doc.setTextColor(...BROWN);
+
+  doc.text(
+    "Total",
+    DESCRIPTION_X,
+    y
+  );
+
+  doc.text(
+    `Rs. ${formatMoney(safeTotal)}`,
+    AMOUNT_X,
+    y,
+    {
+      align: "right",
+    }
+  );
+
+  // ==========================================================
+  // TOTAL BOTTOM LINE
+  // ==========================================================
+
+  y += TOTAL_BOTTOM_GAP;
+
+  doc.setDrawColor(...BROWN);
+  doc.setLineWidth(0.35);
+
+  doc.line(
+    LINE_LEFT,
+    y,
+    LINE_RIGHT,
+    y
+  );
+
+  // ==========================================================
+  // SHIPPING DETAILS - OPTIONAL
   // ==========================================================
 
   if (
     deliveryPartner ||
     trackingId
   ) {
-    y += 11;
+    y += 10;
 
     poppinsBoldFont();
 
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
 
     doc.text(
       "Shipping Details",
@@ -1029,11 +1185,11 @@ export async function generateInvoicePDF({
       y
     );
 
-    y += 7;
+    y += 6;
 
     poppinsMediumFont();
 
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
 
     if (deliveryPartner) {
       doc.text(
@@ -1042,7 +1198,7 @@ export async function generateInvoicePDF({
         y
       );
 
-      y += 6;
+      y += 5;
     }
 
     if (trackingId) {
@@ -1052,20 +1208,17 @@ export async function generateInvoicePDF({
         y
       );
 
-      y += 6;
+      y += 5;
     }
   }
 
   // ==========================================================
   // HEALTHY DELIGHT EVERYDAY
-  // PODKOVA BOLD
   //
-  // IMPORTANT:
-  // No forced y = 190 / y = 198 anymore.
-  // This prevents the line from crossing the tagline.
+  // CONSTANT SPACING
   // ==========================================================
 
-  y += 20;
+  y += TAGLINE_TOP_GAP;
 
   podkovaFont();
 
@@ -1082,10 +1235,10 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // DIVIDER BELOW TAGLINE
+  // LINE BELOW TAGLINE
   // ==========================================================
 
-  y += 13;
+  y += TAGLINE_BOTTOM_GAP;
 
   doc.setDrawColor(...BROWN);
   doc.setLineWidth(0.35);
@@ -1098,11 +1251,66 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // ISSUED BY
-  // POPPINS EXTRA BOLD
+  // FOOTER SAFETY
+  //
+  // If for any unexpected reason the summary reaches the
+  // fixed footer, create one final page.
   // ==========================================================
 
-  y += 13;
+  if (
+    y >
+    FOOTER_LINE_Y - 8
+  ) {
+    doc.addPage();
+
+    drawTopBar();
+    drawBottomBar();
+
+    leagueSpartanFont();
+
+    doc.setFontSize(11);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      `Invoice No. ${invoiceNo || "-"}`,
+      LINE_LEFT,
+      24
+    );
+
+    doc.setDrawColor(...BROWN);
+    doc.setLineWidth(0.35);
+
+    doc.line(
+      LINE_LEFT,
+      32,
+      LINE_RIGHT,
+      32
+    );
+  }
+
+  // ==========================================================
+  // FIXED FOOTER DIVIDER
+  //
+  // IMPORTANT:
+  // This is always at exactly the same Y position.
+  // ==========================================================
+
+  doc.setDrawColor(...BROWN);
+  doc.setLineWidth(0.35);
+
+  doc.line(
+    LINE_LEFT,
+    FOOTER_LINE_Y,
+    LINE_RIGHT,
+    FOOTER_LINE_Y
+  );
+
+  // ==========================================================
+  // ISSUED BY
+  //
+  // FIXED BOTTOM LEFT
+  // POPPINS EXTRA BOLD
+  // ==========================================================
 
   poppinsBoldFont();
 
@@ -1112,65 +1320,75 @@ export async function generateInvoicePDF({
   doc.text(
     "Issued By",
     LINE_LEFT,
-    y
+    FOOTER_Y
   );
 
   // ==========================================================
-  // FOUNDER NAME - LEFT SIDE
+  // FOUNDER NAME
+  //
+  // FIXED BOTTOM LEFT
   // POPPINS EXTRA BOLD
   // ==========================================================
 
-  y += 8;
-
   poppinsBoldFont();
 
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
 
   doc.text(
     safeFounderName,
     LINE_LEFT,
-    y
+    FOOTER_Y + 8
   );
 
   // ==========================================================
   // FSSAI
+  //
+  // FIXED BOTTOM LEFT
   // POPPINS MEDIUM
   // ==========================================================
 
-  y += 7;
-
   poppinsMediumFont();
 
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
 
   doc.text(
     `FSSAI License No: ${FSSAI_NUMBER}`,
     LINE_LEFT,
-    y
+    FOOTER_Y + 15
   );
 
   // ==========================================================
   // SIGNATURE
+  //
+  // FIXED BOTTOM RIGHT
   // BRILLIANT
   // ==========================================================
 
-  const signatureY =
-    y - 13;
-
-  brilliantFont();
-
-  doc.setTextColor(...BROWN);
+  const SIGNATURE_Y =
+    FOOTER_Y + 1;
 
   if (brilliantLoaded) {
+    doc.setFont(
+      "Brilliant",
+      "normal"
+    );
+
     doc.setFontSize(20);
   } else {
-    doc.setFontSize(15);
+    doc.setFont(
+      "helvetica",
+      "oblique"
+    );
+
+    doc.setFontSize(14);
   }
+
+  doc.setTextColor(...BROWN);
 
   doc.text(
     safeFounderName,
     LINE_RIGHT,
-    signatureY,
+    SIGNATURE_Y,
     {
       align: "right",
     }
@@ -1178,62 +1396,56 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // SIGNATURE LINE
+  //
+  // FIXED POSITION
   // ==========================================================
 
-  const signatureLineY =
-    signatureY + 8;
+  const SIGNATURE_LINE_Y =
+    FOOTER_Y + 10;
 
   doc.setDrawColor(...BROWN);
   doc.setLineWidth(0.3);
 
   doc.line(
     142,
-    signatureLineY,
+    SIGNATURE_LINE_Y,
     LINE_RIGHT,
-    signatureLineY
+    SIGNATURE_LINE_Y
   );
 
   // ==========================================================
   // FOUNDER
+  //
+  // FIXED BOTTOM RIGHT
   // POPPINS EXTRA BOLD
   // ==========================================================
 
   poppinsBoldFont();
 
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.setTextColor(...BROWN);
 
   doc.text(
     "Founder",
     LINE_RIGHT,
-    signatureLineY + 8,
+    SIGNATURE_LINE_Y + 8,
     {
       align: "right",
     }
   );
 
   // ==========================================================
-  // BOTTOM GREEN BAR
+  // ENSURE BOTTOM BAR EXISTS ON LAST PAGE
   // ==========================================================
 
-  doc.setFillColor(...GREEN);
-
-  doc.rect(
-    0,
-    PAGE_HEIGHT - 10,
-    PAGE_WIDTH,
-    10,
-    "F"
-  );
+  drawBottomBar();
 
   // ==========================================================
   // SAVE PDF
   // ==========================================================
 
   const filename =
-    `EatOne-Invoice-${
-      invoiceNo || "Invoice"
-    }.pdf`;
+    `EatOne-Invoice-${invoiceNo || "Invoice"}.pdf`;
 
   doc.save(filename);
 
