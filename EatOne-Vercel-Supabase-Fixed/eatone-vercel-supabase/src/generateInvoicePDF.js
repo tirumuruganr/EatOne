@@ -1,11 +1,11 @@
 import jsPDF from "jspdf";
 
 // ============================================================
-// EAT ONE - INVOICE PDF GENERATOR
+// EAT ONE - INVOICE PDF
 // ============================================================
 
 // ============================================================
-// BRAND
+// BRAND SETTINGS
 // ============================================================
 
 const BROWN = [42, 32, 22];
@@ -15,7 +15,7 @@ const BRAND_TAGLINE = "Healthy Delight Everyday";
 const FSSAI_NUMBER = "21226008002884";
 
 // ============================================================
-// LOAD FILE AS BASE64
+// LOAD FONT FILE AS BASE64
 // ============================================================
 
 async function loadFileAsBase64(url) {
@@ -109,14 +109,16 @@ export async function generateInvoicePDF({
   });
 
   // ==========================================================
-  // PAGE DIMENSIONS
+  // PAGE SETTINGS
   // ==========================================================
 
   const PAGE_WIDTH = 210;
   const PAGE_HEIGHT = 297;
 
   // ==========================================================
-  // COMMON LEFT / RIGHT ALIGNMENT
+  // COMMON LINE ALIGNMENT
+  //
+  // EVERY MAIN HORIZONTAL LINE USES THESE COORDINATES
   // ==========================================================
 
   const LINE_LEFT = 14;
@@ -132,7 +134,7 @@ export async function generateInvoicePDF({
   const AMOUNT_X = 190;
 
   // ==========================================================
-  // CONSTANT SPACING
+  // CONSTANT TABLE SPACING
   // ==========================================================
 
   const TABLE_HEADER_TOP_GAP = 16;
@@ -140,50 +142,101 @@ export async function generateInvoicePDF({
 
   const TABLE_FIRST_ROW_GAP = 11;
 
-  const TABLE_ROW_HEIGHT = 13;
+  const MINIMUM_ROW_HEIGHT = 13;
+
+  // ==========================================================
+  // TOTAL SPACING
+  // ==========================================================
 
   const TOTAL_TOP_GAP = 12;
   const TOTAL_BOTTOM_GAP = 12;
+
+  // ==========================================================
+  // TAGLINE SPACING
+  // ==========================================================
 
   const TAGLINE_TOP_GAP = 18;
   const TAGLINE_BOTTOM_GAP = 14;
 
   // ==========================================================
-  // FIXED FOOTER
+  // FIXED FOOTER POSITIONS
+  //
+  // Footer is always fixed on LAST PAGE.
   // ==========================================================
 
-  // Footer divider line
   const FOOTER_LINE_Y = 241;
 
-  // Issued By starts here
-  const FOOTER_Y = 253;
+  const FOOTER_TITLE_Y = 253;
 
-  // Bottom green bar
-  const BOTTOM_BAR_Y = PAGE_HEIGHT - 10;
+  const FOOTER_NAME_Y = 261;
+
+  const FOOTER_FSSAI_Y = 268;
+
+  const SIGNATURE_TEXT_Y = 254;
+
+  const SIGNATURE_LINE_Y = 263;
+
+  const FOUNDER_ROLE_Y = 271;
 
   // ==========================================================
-  // CONTENT LIMIT
+  // PAGE BARS
+  // ==========================================================
+
+  const TOP_BAR_HEIGHT = 10;
+
+  const BOTTOM_BAR_HEIGHT = 10;
+
+  const BOTTOM_BAR_Y =
+    PAGE_HEIGHT - BOTTOM_BAR_HEIGHT;
+
+  // ==========================================================
+  // CONTENT LIMITS
+  // ==========================================================
+
+  // Normal continuation pages can use more space because
+  // footer will only be shown on final page.
+  const CONTINUATION_ITEM_LIMIT = 274;
+
+  // ==========================================================
+  // FINAL SECTION SIZE
   //
-  // Products must stop before this position.
-  // This reserves room for Total + Tagline + Footer.
+  // This is the ACTUAL amount of space required after the
+  // final product to show:
+  //
+  // Table bottom line
+  // Total
+  // Total bottom line
+  // Healthy Delight Everyday
+  // Tagline bottom line
+  //
+  // before reaching fixed footer line.
   // ==========================================================
 
-  const ITEM_PAGE_LIMIT = 220;
+  const FINAL_SECTION_HEIGHT =
+    3 +
+    TOTAL_TOP_GAP +
+    TOTAL_BOTTOM_GAP +
+    TAGLINE_TOP_GAP +
+    TAGLINE_BOTTOM_GAP;
 
   // ==========================================================
   // SAFE DATA
   // ==========================================================
 
-  const safeCustomer = customer || {};
+  const safeCustomer =
+    customer || {};
 
-  const safeItems = Array.isArray(items)
-    ? items
-    : [];
+  const safeItems =
+    Array.isArray(items)
+      ? items
+      : [];
 
-  const safeTotal = Number(total || 0);
+  const safeTotal =
+    Number(total || 0);
 
   const safeFounderName =
-    founderName || "Manisha D Shetty";
+    founderName ||
+    "Manisha D Shetty";
 
   // ==========================================================
   // FONT STATUS
@@ -196,7 +249,7 @@ export async function generateInvoicePDF({
   let brilliantLoaded = false;
 
   // ==========================================================
-  // LEAGUE SPARTAN BOLD
+  // LOAD LEAGUE SPARTAN
   // ==========================================================
 
   try {
@@ -226,6 +279,10 @@ export async function generateInvoicePDF({
     );
 
     leagueSpartanLoaded = true;
+
+    console.log(
+      "League Spartan loaded successfully"
+    );
   } catch (error) {
     console.error(
       "League Spartan failed:",
@@ -234,7 +291,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // POPPINS MEDIUM
+  // LOAD POPPINS MEDIUM
   // ==========================================================
 
   try {
@@ -264,6 +321,10 @@ export async function generateInvoicePDF({
     );
 
     poppinsMediumLoaded = true;
+
+    console.log(
+      "Poppins Medium loaded successfully"
+    );
   } catch (error) {
     console.error(
       "Poppins Medium failed:",
@@ -272,7 +333,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // POPPINS EXTRA BOLD
+  // LOAD POPPINS EXTRA BOLD
   // ==========================================================
 
   try {
@@ -302,6 +363,10 @@ export async function generateInvoicePDF({
     );
 
     poppinsExtraBoldLoaded = true;
+
+    console.log(
+      "Poppins ExtraBold loaded successfully"
+    );
   } catch (error) {
     console.error(
       "Poppins ExtraBold failed:",
@@ -310,7 +375,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // PODKOVA BOLD
+  // LOAD PODKOVA
   // ==========================================================
 
   try {
@@ -340,6 +405,10 @@ export async function generateInvoicePDF({
     );
 
     podkovaLoaded = true;
+
+    console.log(
+      "Podkova loaded successfully"
+    );
   } catch (error) {
     console.error(
       "Podkova failed:",
@@ -348,7 +417,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // BRILLIANT SIGNATURE FONT
+  // LOAD BRILLIANT
   // ==========================================================
 
   try {
@@ -378,6 +447,10 @@ export async function generateInvoicePDF({
     );
 
     brilliantLoaded = true;
+
+    console.log(
+      "Brilliant loaded successfully"
+    );
   } catch (error) {
     console.error(
       "Brilliant failed:",
@@ -445,8 +518,22 @@ export async function generateInvoicePDF({
     }
   };
 
+  const brilliantFont = () => {
+    if (brilliantLoaded) {
+      doc.setFont(
+        "Brilliant",
+        "normal"
+      );
+    } else {
+      doc.setFont(
+        "helvetica",
+        "oblique"
+      );
+    }
+  };
+
   // ==========================================================
-  // DRAW TOP BAR
+  // DRAW TOP BROWN BAR
   // ==========================================================
 
   const drawTopBar = () => {
@@ -456,13 +543,13 @@ export async function generateInvoicePDF({
       0,
       0,
       PAGE_WIDTH,
-      10,
+      TOP_BAR_HEIGHT,
       "F"
     );
   };
 
   // ==========================================================
-  // DRAW BOTTOM BAR
+  // DRAW BOTTOM GREEN BAR
   // ==========================================================
 
   const drawBottomBar = () => {
@@ -472,8 +559,25 @@ export async function generateInvoicePDF({
       0,
       BOTTOM_BAR_Y,
       PAGE_WIDTH,
-      10,
+      BOTTOM_BAR_HEIGHT,
       "F"
+    );
+  };
+
+  // ==========================================================
+  // DRAW MAIN LINE
+  // ==========================================================
+
+  const drawMainLine = (lineY) => {
+    doc.setDrawColor(...BROWN);
+
+    doc.setLineWidth(0.35);
+
+    doc.line(
+      LINE_LEFT,
+      lineY,
+      LINE_RIGHT,
+      lineY
     );
   };
 
@@ -481,97 +585,94 @@ export async function generateInvoicePDF({
   // DRAW TABLE HEADER
   // ==========================================================
 
-  const drawTableHeader = (startY) => {
-    let headerY = startY;
+  const drawTableHeader = (
+    startingLineY
+  ) => {
+    let tableY =
+      startingLineY +
+      TABLE_HEADER_TOP_GAP;
 
     // --------------------------------------------------------
-    // Fixed gap above heading
-    // --------------------------------------------------------
-
-    headerY += TABLE_HEADER_TOP_GAP;
-
-    // --------------------------------------------------------
-    // Heading
+    // HEADINGS
     // --------------------------------------------------------
 
     poppinsBoldFont();
 
     doc.setFontSize(10);
+
     doc.setTextColor(...BROWN);
 
     doc.text(
       "Description",
       DESCRIPTION_X,
-      headerY
+      tableY
     );
 
     doc.text(
       "Category",
       CATEGORY_X,
-      headerY
+      tableY
     );
 
     doc.text(
       "Quantity",
       QUANTITY_X,
-      headerY
+      tableY
     );
 
     doc.text(
       "Amount",
       AMOUNT_X,
-      headerY,
+      tableY,
       {
         align: "right",
       }
     );
 
     // --------------------------------------------------------
-    // Fixed gap below heading
+    // FIXED DISTANCE BELOW HEADINGS
     // --------------------------------------------------------
 
-    headerY += TABLE_HEADER_BOTTOM_GAP;
+    tableY +=
+      TABLE_HEADER_BOTTOM_GAP;
 
     // --------------------------------------------------------
-    // Header bottom line
+    // TABLE HEADER BOTTOM LINE
     // --------------------------------------------------------
 
-    doc.setDrawColor(...BROWN);
-    doc.setLineWidth(0.35);
-
-    doc.line(
-      LINE_LEFT,
-      headerY,
-      LINE_RIGHT,
-      headerY
-    );
+    drawMainLine(tableY);
 
     // --------------------------------------------------------
-    // Fixed gap to first row
+    // FIXED DISTANCE TO FIRST ROW
     // --------------------------------------------------------
 
-    headerY += TABLE_FIRST_ROW_GAP;
+    tableY +=
+      TABLE_FIRST_ROW_GAP;
 
-    return headerY;
+    return tableY;
   };
 
   // ==========================================================
-  // NEW ITEM PAGE
+  // DRAW CONTINUATION PAGE
   // ==========================================================
 
-  const createNewItemPage = () => {
+  const createContinuationPage = () => {
     doc.addPage();
 
+    // Brown top border
     drawTopBar();
+
+    // Green bottom border
     drawBottomBar();
 
     // --------------------------------------------------------
-    // Continued invoice heading
+    // INVOICE REFERENCE
     // --------------------------------------------------------
 
     leagueSpartanFont();
 
     doc.setFontSize(11);
+
     doc.setTextColor(...BROWN);
 
     doc.text(
@@ -590,36 +691,58 @@ export async function generateInvoicePDF({
     );
 
     // --------------------------------------------------------
-    // Divider
+    // TOP CONTENT DIVIDER
     // --------------------------------------------------------
 
-    doc.setDrawColor(...BROWN);
-    doc.setLineWidth(0.35);
-
-    doc.line(
-      LINE_LEFT,
-      32,
-      LINE_RIGHT,
-      32
-    );
+    drawMainLine(32);
 
     // --------------------------------------------------------
-    // Repeat table heading
+    // REPEAT TABLE HEADER
     // --------------------------------------------------------
 
     return drawTableHeader(32);
   };
 
   // ==========================================================
-  // FIRST PAGE TOP BAR
+  // DRAW FINAL SUMMARY PAGE HEADER
+  // ==========================================================
+
+  const createFinalSummaryPage = () => {
+    doc.addPage();
+
+    drawTopBar();
+    drawBottomBar();
+
+    leagueSpartanFont();
+
+    doc.setFontSize(11);
+    doc.setTextColor(...BROWN);
+
+    doc.text(
+      `Invoice No. ${invoiceNo || "-"}`,
+      LINE_LEFT,
+      24
+    );
+
+    doc.text(
+      "Invoice Summary",
+      LINE_RIGHT,
+      24,
+      {
+        align: "right",
+      }
+    );
+
+    drawMainLine(32);
+
+    return 45;
+  };
+
+  // ==========================================================
+  // FIRST PAGE BORDERS
   // ==========================================================
 
   drawTopBar();
-
-  // ==========================================================
-  // FIRST PAGE BOTTOM BAR
-  // ==========================================================
-
   drawBottomBar();
 
   // ==========================================================
@@ -649,6 +772,7 @@ export async function generateInvoicePDF({
     leagueSpartanFont();
 
     doc.setFontSize(26);
+
     doc.setTextColor(...BROWN);
 
     doc.text(
@@ -660,11 +784,13 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // DATE
+  // LEAGUE SPARTAN
   // ==========================================================
 
   leagueSpartanFont();
 
   doc.setFontSize(12);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -678,6 +804,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // INVOICE NUMBER
+  // LEAGUE SPARTAN
   // ==========================================================
 
   leagueSpartanFont();
@@ -695,6 +822,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // STATUS
+  // LEAGUE SPARTAN
   // ==========================================================
 
   let displayStatus =
@@ -721,23 +849,16 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FIRST DIVIDER
+  // FIRST LINE
   // ==========================================================
 
   let y = 52;
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
+  drawMainLine(y);
 
   // ==========================================================
   // BILLED TO
+  // LEAGUE SPARTAN
   // ==========================================================
 
   y += 11;
@@ -745,6 +866,7 @@ export async function generateInvoicePDF({
   leagueSpartanFont();
 
   doc.setFontSize(12);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -755,6 +877,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER NAME
+  // POPPINS MEDIUM
   // ==========================================================
 
   y += 8;
@@ -773,6 +896,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER ADDRESS
+  // POPPINS MEDIUM
   // ==========================================================
 
   y += 7;
@@ -787,21 +911,25 @@ export async function generateInvoicePDF({
 
   if (
     safeCustomer.pincode &&
-    !String(customerAddress).includes(
-      String(safeCustomer.pincode)
+    !String(
+      customerAddress
+    ).includes(
+      String(
+        safeCustomer.pincode
+      )
     )
   ) {
     fullAddress =
       `${customerAddress} - ${safeCustomer.pincode}`;
   }
 
+  poppinsMediumFont();
+
   const addressLines =
     doc.splitTextToSize(
       fullAddress,
       175
     );
-
-  poppinsMediumFont();
 
   doc.text(
     addressLines,
@@ -817,6 +945,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // PHONE
+  // POPPINS MEDIUM
   // ==========================================================
 
   let customerPhone =
@@ -824,7 +953,9 @@ export async function generateInvoicePDF({
 
   if (
     customerPhone !== "-" &&
-    !String(customerPhone).startsWith("+")
+    !String(
+      customerPhone
+    ).startsWith("+")
   ) {
     customerPhone =
       `+91 ${customerPhone}`;
@@ -840,6 +971,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // ORDER ID
+  // POPPINS MEDIUM
   // ==========================================================
 
   if (orderId) {
@@ -855,20 +987,12 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // CUSTOMER BOTTOM LINE
+  // CUSTOMER SECTION BOTTOM LINE
   // ==========================================================
 
   y += 10;
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
+  drawMainLine(y);
 
   // ==========================================================
   // TABLE HEADER
@@ -877,7 +1001,7 @@ export async function generateInvoicePDF({
   y = drawTableHeader(y);
 
   // ==========================================================
-  // PRODUCT ROWS
+  // PRODUCTS
   // ==========================================================
 
   for (
@@ -902,11 +1026,13 @@ export async function generateInvoicePDF({
     const amount =
       row.amount !== undefined &&
       row.amount !== null
-        ? `Rs. ${formatMoney(row.amount)}`
+        ? `Rs. ${formatMoney(
+            row.amount
+          )}`
         : "-";
 
     // ========================================================
-    // WRAP TEXT
+    // PREPARE WRAPPED TEXT
     // ========================================================
 
     poppinsMediumFont();
@@ -931,6 +1057,10 @@ export async function generateInvoicePDF({
         34
       );
 
+    // ========================================================
+    // CALCULATE ROW HEIGHT
+    // ========================================================
+
     const maximumLines =
       Math.max(
         descriptionLines.length,
@@ -939,72 +1069,89 @@ export async function generateInvoicePDF({
         1
       );
 
-    // ========================================================
-    // CALCULATE ACTUAL ROW HEIGHT
-    // ========================================================
-
-    const calculatedRowHeight =
+    const rowHeight =
       Math.max(
-        TABLE_ROW_HEIGHT,
+        MINIMUM_ROW_HEIGHT,
         maximumLines * 5 + 6
       );
 
     // ========================================================
-    // PAGE BREAK CHECK
+    // DETERMINE WHETHER THIS IS LAST PRODUCT
     // ========================================================
 
-    if (
-      y + calculatedRowHeight >
-      ITEM_PAGE_LIMIT
-    ) {
+    const isLastItem =
+      index ===
+      safeItems.length - 1;
+
+    // ========================================================
+    // PAGE BREAK LOGIC
+    //
+    // IMPORTANT:
+    //
+    // If this is the last item, we also check whether
+    // Total + Tagline can fit before the fixed footer.
+    //
+    // This avoids unnecessary extra pages.
+    // ========================================================
+
+    if (isLastItem) {
+      const spaceNeeded =
+        rowHeight +
+        FINAL_SECTION_HEIGHT;
+
+      if (
+        y + spaceNeeded >
+        FOOTER_LINE_Y
+      ) {
+        y =
+          createContinuationPage();
+      }
+    } else {
       // ------------------------------------------------------
-      // Close current table
+      // NORMAL PRODUCT
       // ------------------------------------------------------
 
-      doc.setDrawColor(...BROWN);
-      doc.setLineWidth(0.35);
-
-      doc.line(
-        LINE_LEFT,
-        y - 5,
-        LINE_RIGHT,
-        y - 5
-      );
-
-      // ------------------------------------------------------
-      // New page + repeated heading
-      // ------------------------------------------------------
-
-      y = createNewItemPage();
+      if (
+        y + rowHeight >
+        CONTINUATION_ITEM_LIMIT
+      ) {
+        y =
+          createContinuationPage();
+      }
     }
 
     // ========================================================
-    // DRAW ROW
+    // DRAW PRODUCT
     // ========================================================
 
     poppinsMediumFont();
 
     doc.setFontSize(9.5);
+
     doc.setTextColor(...BROWN);
 
+    // Description
     doc.text(
       descriptionLines,
       DESCRIPTION_X,
       y
     );
 
+    // Category
     doc.text(
       categoryLines,
       CATEGORY_X,
       y
     );
 
+    // Quantity
     doc.text(
       quantityLines,
       QUANTITY_X,
       y
     );
 
+    // Amount
     doc.text(
       amount,
       AMOUNT_X,
@@ -1018,16 +1165,13 @@ export async function generateInvoicePDF({
     // MOVE TO NEXT ROW
     // ========================================================
 
-    y += calculatedRowHeight;
+    y += rowHeight;
 
     // ========================================================
-    // ROW DIVIDER
+    // LIGHT ROW DIVIDER
     // ========================================================
 
-    if (
-      index <
-      safeItems.length - 1
-    ) {
+    if (!isLastItem) {
       doc.setDrawColor(
         220,
         220,
@@ -1046,65 +1190,17 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // SPACE NEEDED AFTER PRODUCTS
+  // FINAL FIT CHECK
   //
-  // We need enough room for:
-  // table bottom
-  // total
-  // tagline
-  // footer
-  // ==========================================================
-
-  const REQUIRED_FINAL_SPACE = 85;
-
-  // ==========================================================
-  // IF FINAL SECTIONS DO NOT FIT, CREATE LAST PAGE
+  // This is especially useful if there are ZERO items.
   // ==========================================================
 
   if (
-    y + REQUIRED_FINAL_SPACE >
+    y + FINAL_SECTION_HEIGHT >
     FOOTER_LINE_Y
   ) {
-    doc.addPage();
-
-    drawTopBar();
-    drawBottomBar();
-
-    // --------------------------------------------------------
-    // Invoice reference on final page
-    // --------------------------------------------------------
-
-    leagueSpartanFont();
-
-    doc.setFontSize(11);
-    doc.setTextColor(...BROWN);
-
-    doc.text(
-      `Invoice No. ${invoiceNo || "-"}`,
-      LINE_LEFT,
-      24
-    );
-
-    doc.text(
-      "Invoice Summary",
-      LINE_RIGHT,
-      24,
-      {
-        align: "right",
-      }
-    );
-
-    doc.setDrawColor(...BROWN);
-    doc.setLineWidth(0.35);
-
-    doc.line(
-      LINE_LEFT,
-      32,
-      LINE_RIGHT,
-      32
-    );
-
-    y = 45;
+    y =
+      createFinalSummaryPage();
   }
 
   // ==========================================================
@@ -1113,18 +1209,16 @@ export async function generateInvoicePDF({
 
   y += 3;
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
+  drawMainLine(y);
 
   // ==========================================================
   // TOTAL
+  //
+  // LINE
+  // ↓ fixed 12mm
+  // TOTAL
+  // ↓ fixed 12mm
+  // LINE
   // ==========================================================
 
   y += TOTAL_TOP_GAP;
@@ -1132,16 +1226,21 @@ export async function generateInvoicePDF({
   poppinsBoldFont();
 
   doc.setFontSize(11);
+
   doc.setTextColor(...BROWN);
 
+  // Total label
   doc.text(
     "Total",
     DESCRIPTION_X,
     y
   );
 
+  // Total amount
   doc.text(
-    `Rs. ${formatMoney(safeTotal)}`,
+    `Rs. ${formatMoney(
+      safeTotal
+    )}`,
     AMOUNT_X,
     y,
     {
@@ -1155,67 +1254,16 @@ export async function generateInvoicePDF({
 
   y += TOTAL_BOTTOM_GAP;
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
-
-  // ==========================================================
-  // SHIPPING DETAILS - OPTIONAL
-  // ==========================================================
-
-  if (
-    deliveryPartner ||
-    trackingId
-  ) {
-    y += 10;
-
-    poppinsBoldFont();
-
-    doc.setFontSize(9.5);
-
-    doc.text(
-      "Shipping Details",
-      LINE_LEFT,
-      y
-    );
-
-    y += 6;
-
-    poppinsMediumFont();
-
-    doc.setFontSize(8.5);
-
-    if (deliveryPartner) {
-      doc.text(
-        `Delivery Partner: ${deliveryPartner}`,
-        LINE_LEFT,
-        y
-      );
-
-      y += 5;
-    }
-
-    if (trackingId) {
-      doc.text(
-        `Tracking ID: ${trackingId}`,
-        LINE_LEFT,
-        y
-      );
-
-      y += 5;
-    }
-  }
+  drawMainLine(y);
 
   // ==========================================================
   // HEALTHY DELIGHT EVERYDAY
   //
-  // CONSTANT SPACING
+  // LINE
+  // ↓ fixed 18mm
+  // TAGLINE
+  // ↓ fixed 14mm
+  // LINE
   // ==========================================================
 
   y += TAGLINE_TOP_GAP;
@@ -1223,6 +1271,7 @@ export async function generateInvoicePDF({
   podkovaFont();
 
   doc.setFontSize(13);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -1235,98 +1284,44 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // LINE BELOW TAGLINE
+  // TAGLINE BOTTOM LINE
   // ==========================================================
 
   y += TAGLINE_BOTTOM_GAP;
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    y,
-    LINE_RIGHT,
-    y
-  );
+  drawMainLine(y);
 
   // ==========================================================
-  // FOOTER SAFETY
+  // FIXED FOOTER
   //
-  // If for any unexpected reason the summary reaches the
-  // fixed footer, create one final page.
-  // ==========================================================
-
-  if (
-    y >
-    FOOTER_LINE_Y - 8
-  ) {
-    doc.addPage();
-
-    drawTopBar();
-    drawBottomBar();
-
-    leagueSpartanFont();
-
-    doc.setFontSize(11);
-    doc.setTextColor(...BROWN);
-
-    doc.text(
-      `Invoice No. ${invoiceNo || "-"}`,
-      LINE_LEFT,
-      24
-    );
-
-    doc.setDrawColor(...BROWN);
-    doc.setLineWidth(0.35);
-
-    doc.line(
-      LINE_LEFT,
-      32,
-      LINE_RIGHT,
-      32
-    );
-  }
-
-  // ==========================================================
-  // FIXED FOOTER DIVIDER
+  // ONLY ON LAST PAGE
   //
-  // IMPORTANT:
-  // This is always at exactly the same Y position.
+  // This DOES NOT depend on y.
   // ==========================================================
 
-  doc.setDrawColor(...BROWN);
-  doc.setLineWidth(0.35);
-
-  doc.line(
-    LINE_LEFT,
-    FOOTER_LINE_Y,
-    LINE_RIGHT,
+  drawMainLine(
     FOOTER_LINE_Y
   );
 
   // ==========================================================
   // ISSUED BY
-  //
-  // FIXED BOTTOM LEFT
   // POPPINS EXTRA BOLD
   // ==========================================================
 
   poppinsBoldFont();
 
   doc.setFontSize(11);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
     "Issued By",
     LINE_LEFT,
-    FOOTER_Y
+    FOOTER_TITLE_Y
   );
 
   // ==========================================================
-  // FOUNDER NAME
-  //
-  // FIXED BOTTOM LEFT
+  // FOUNDER NAME - LEFT
   // POPPINS EXTRA BOLD
   // ==========================================================
 
@@ -1337,13 +1332,11 @@ export async function generateInvoicePDF({
   doc.text(
     safeFounderName,
     LINE_LEFT,
-    FOOTER_Y + 8
+    FOOTER_NAME_Y
   );
 
   // ==========================================================
   // FSSAI
-  //
-  // FIXED BOTTOM LEFT
   // POPPINS MEDIUM
   // ==========================================================
 
@@ -1354,32 +1347,19 @@ export async function generateInvoicePDF({
   doc.text(
     `FSSAI License No: ${FSSAI_NUMBER}`,
     LINE_LEFT,
-    FOOTER_Y + 15
+    FOOTER_FSSAI_Y
   );
 
   // ==========================================================
   // SIGNATURE
-  //
-  // FIXED BOTTOM RIGHT
   // BRILLIANT
   // ==========================================================
 
-  const SIGNATURE_Y =
-    FOOTER_Y + 1;
+  brilliantFont();
 
   if (brilliantLoaded) {
-    doc.setFont(
-      "Brilliant",
-      "normal"
-    );
-
     doc.setFontSize(20);
   } else {
-    doc.setFont(
-      "helvetica",
-      "oblique"
-    );
-
     doc.setFontSize(14);
   }
 
@@ -1388,7 +1368,7 @@ export async function generateInvoicePDF({
   doc.text(
     safeFounderName,
     LINE_RIGHT,
-    SIGNATURE_Y,
+    SIGNATURE_TEXT_Y,
     {
       align: "right",
     }
@@ -1396,14 +1376,10 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // SIGNATURE LINE
-  //
-  // FIXED POSITION
   // ==========================================================
 
-  const SIGNATURE_LINE_Y =
-    FOOTER_Y + 10;
-
   doc.setDrawColor(...BROWN);
+
   doc.setLineWidth(0.3);
 
   doc.line(
@@ -1415,37 +1391,39 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // FOUNDER
-  //
-  // FIXED BOTTOM RIGHT
   // POPPINS EXTRA BOLD
   // ==========================================================
 
   poppinsBoldFont();
 
   doc.setFontSize(9.5);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
     "Founder",
     LINE_RIGHT,
-    SIGNATURE_LINE_Y + 8,
+    FOUNDER_ROLE_Y,
     {
       align: "right",
     }
   );
 
   // ==========================================================
-  // ENSURE BOTTOM BAR EXISTS ON LAST PAGE
+  // MAKE SURE LAST PAGE HAS BOTTOM GREEN BAR
   // ==========================================================
 
   drawBottomBar();
 
   // ==========================================================
-  // SAVE PDF
+  // SAVE
   // ==========================================================
 
   const filename =
-    `EatOne-Invoice-${invoiceNo || "Invoice"}.pdf`;
+    `EatOne-Invoice-${
+      invoiceNo ||
+      "Invoice"
+    }.pdf`;
 
   doc.save(filename);
 
