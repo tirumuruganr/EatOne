@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 
 // ============================================================
-// EAT ONE BRAND SETTINGS
+// BRAND SETTINGS
 // ============================================================
 
 const BROWN = [42, 32, 22];
@@ -34,7 +34,7 @@ async function loadFileAsBase64(url) {
 }
 
 // ============================================================
-// LOAD IMAGE AS DATA URL
+// LOAD IMAGE
 // ============================================================
 
 async function loadImageAsDataURL(url) {
@@ -60,7 +60,7 @@ async function loadImageAsDataURL(url) {
 }
 
 // ============================================================
-// FORMAT MONEY
+// MONEY FORMAT
 // ============================================================
 
 function formatMoney(value) {
@@ -68,7 +68,7 @@ function formatMoney(value) {
 }
 
 // ============================================================
-// FORMAT DATE
+// DATE FORMAT
 // ============================================================
 
 function formatInvoiceDate() {
@@ -80,7 +80,7 @@ function formatInvoiceDate() {
 }
 
 // ============================================================
-// GENERATE INVOICE PDF
+// GENERATE INVOICE
 // ============================================================
 
 export async function generateInvoicePDF({
@@ -111,12 +111,11 @@ export async function generateInvoicePDF({
   const PAGE_WIDTH = 210;
   const PAGE_HEIGHT = 297;
 
-  // Every main horizontal line uses these same coordinates
   const LINE_LEFT = 14;
   const LINE_RIGHT = 196;
 
   // ==========================================================
-  // TABLE COLUMN POSITIONS
+  // TABLE COLUMNS
   // ==========================================================
 
   const DESCRIPTION_X = 14;
@@ -143,83 +142,31 @@ export async function generateInvoicePDF({
   // FONT STATUS
   // ==========================================================
 
-  let poppinsLoaded = false;
-  let spartanLoaded = false;
+  let leagueSpartanLoaded = false;
+  let poppinsMediumLoaded = false;
+  let poppinsExtraBoldLoaded = false;
+  let podkovaLoaded = false;
   let brilliantLoaded = false;
 
   // ==========================================================
-  // LOAD POPPINS MEDIUM
+  // 1. LEAGUE SPARTAN BOLD
   //
-  // Exact filename:
-  // public/Poppins-Medium.ttf
+  // Used for:
+  // Date
+  // Invoice No
+  // Status
+  // Billed to
   // ==========================================================
 
   try {
-    const poppinsBase64 =
-      await loadFileAsBase64(
-        "/Poppins-Medium.ttf"
-      );
-
-    doc.addFileToVFS(
-      "Poppins-Medium.ttf",
-      poppinsBase64
-    );
-
-    doc.addFont(
-      "Poppins-Medium.ttf",
-      "Poppins",
-      "normal"
-    );
-
-    doc.setFont(
-      "Poppins",
-      "normal"
-    );
-
-    // Test whether jsPDF can actually use it
-    doc.getTextWidth(
-      "Poppins Test"
-    );
-
-    poppinsLoaded = true;
-
-    console.log(
-      "Poppins loaded successfully"
-    );
-  } catch (error) {
-    poppinsLoaded = false;
-
-    console.error(
-      "Poppins failed - using Helvetica:",
-      error
-    );
-
-    doc.setFont(
-      "helvetica",
-      "normal"
-    );
-  }
-
-  // ==========================================================
-  // LOAD LEAGUE SPARTAN BOLD
-  //
-  // IMPORTANT:
-  // This matches your EXACT filename:
-  //
-  // public/league-spartan-bold.ttf
-  //
-  // LOWERCASE!
-  // ==========================================================
-
-  try {
-    const spartanBase64 =
+    const font =
       await loadFileAsBase64(
         "/league-spartan-bold.ttf"
       );
 
     doc.addFileToVFS(
       "league-spartan-bold.ttf",
-      spartanBase64
+      font
     );
 
     doc.addFont(
@@ -233,46 +180,186 @@ export async function generateInvoicePDF({
       "bold"
     );
 
-    // Test whether jsPDF can use it
     doc.getTextWidth(
       "League Spartan Test"
     );
 
-    spartanLoaded = true;
+    leagueSpartanLoaded = true;
 
     console.log(
-      "League Spartan TTF loaded successfully"
+      "League Spartan loaded successfully"
     );
   } catch (error) {
-    spartanLoaded = false;
-
     console.error(
-      "League Spartan failed - using Helvetica Bold:",
+      "League Spartan failed:",
       error
     );
 
-    doc.setFont(
-      "helvetica",
-      "bold"
-    );
+    leagueSpartanLoaded = false;
   }
 
   // ==========================================================
-  // LOAD BRILLIANT SIGNATURE FONT
+  // 2. POPPINS MEDIUM
   //
-  // Exact filename:
-  // public/Brilliant.ttf
+  // Used for normal/customer/product text
   // ==========================================================
 
   try {
-    const brilliantBase64 =
+    const font =
+      await loadFileAsBase64(
+        "/Poppins-Medium.ttf"
+      );
+
+    doc.addFileToVFS(
+      "Poppins-Medium.ttf",
+      font
+    );
+
+    doc.addFont(
+      "Poppins-Medium.ttf",
+      "PoppinsMedium",
+      "normal"
+    );
+
+    doc.setFont(
+      "PoppinsMedium",
+      "normal"
+    );
+
+    doc.getTextWidth(
+      "Poppins Medium Test"
+    );
+
+    poppinsMediumLoaded = true;
+
+    console.log(
+      "Poppins Medium loaded successfully"
+    );
+  } catch (error) {
+    console.error(
+      "Poppins Medium failed:",
+      error
+    );
+
+    poppinsMediumLoaded = false;
+  }
+
+  // ==========================================================
+  // 3. POPPINS EXTRA BOLD
+  //
+  // Used for:
+  // Description
+  // Category
+  // Quantity
+  // Amount
+  // Total
+  // Total price
+  // Issued By
+  // Founder
+  // ==========================================================
+
+  try {
+    const font =
+      await loadFileAsBase64(
+        "/Poppins-ExtraBold.ttf"
+      );
+
+    doc.addFileToVFS(
+      "Poppins-ExtraBold.ttf",
+      font
+    );
+
+    doc.addFont(
+      "Poppins-ExtraBold.ttf",
+      "PoppinsExtraBold",
+      "bold"
+    );
+
+    doc.setFont(
+      "PoppinsExtraBold",
+      "bold"
+    );
+
+    doc.getTextWidth(
+      "Poppins ExtraBold Test"
+    );
+
+    poppinsExtraBoldLoaded = true;
+
+    console.log(
+      "Poppins ExtraBold loaded successfully"
+    );
+  } catch (error) {
+    console.error(
+      "Poppins ExtraBold failed:",
+      error
+    );
+
+    poppinsExtraBoldLoaded = false;
+  }
+
+  // ==========================================================
+  // 4. PODKOVA BOLD
+  //
+  // Used for:
+  // Healthy Delight Everyday
+  // ==========================================================
+
+  try {
+    const font =
+      await loadFileAsBase64(
+        "/Podkova-Bold.ttf"
+      );
+
+    doc.addFileToVFS(
+      "Podkova-Bold.ttf",
+      font
+    );
+
+    doc.addFont(
+      "Podkova-Bold.ttf",
+      "Podkova",
+      "bold"
+    );
+
+    doc.setFont(
+      "Podkova",
+      "bold"
+    );
+
+    doc.getTextWidth(
+      "Podkova Test"
+    );
+
+    podkovaLoaded = true;
+
+    console.log(
+      "Podkova loaded successfully"
+    );
+  } catch (error) {
+    console.error(
+      "Podkova failed:",
+      error
+    );
+
+    podkovaLoaded = false;
+  }
+
+  // ==========================================================
+  // 5. BRILLIANT
+  //
+  // Used ONLY for signature
+  // ==========================================================
+
+  try {
+    const font =
       await loadFileAsBase64(
         "/Brilliant.ttf"
       );
 
     doc.addFileToVFS(
       "Brilliant.ttf",
-      brilliantBase64
+      font
     );
 
     doc.addFont(
@@ -286,9 +373,8 @@ export async function generateInvoicePDF({
       "normal"
     );
 
-    // Test font
     doc.getTextWidth(
-      "Manisha D Shetty"
+      safeFounderName
     );
 
     brilliantLoaded = true;
@@ -297,39 +383,20 @@ export async function generateInvoicePDF({
       "Brilliant loaded successfully"
     );
   } catch (error) {
-    brilliantLoaded = false;
-
     console.error(
-      "Brilliant failed - using Helvetica Oblique:",
+      "Brilliant failed:",
       error
     );
 
-    doc.setFont(
-      "helvetica",
-      "oblique"
-    );
+    brilliantLoaded = false;
   }
 
   // ==========================================================
   // FONT HELPERS
   // ==========================================================
 
-  const normalFont = () => {
-    if (poppinsLoaded) {
-      doc.setFont(
-        "Poppins",
-        "normal"
-      );
-    } else {
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
-    }
-  };
-
-  const boldFont = () => {
-    if (spartanLoaded) {
+  const leagueSpartanFont = () => {
+    if (leagueSpartanLoaded) {
       doc.setFont(
         "LeagueSpartan",
         "bold"
@@ -342,7 +409,49 @@ export async function generateInvoicePDF({
     }
   };
 
-  const signatureFont = () => {
+  const poppinsMediumFont = () => {
+    if (poppinsMediumLoaded) {
+      doc.setFont(
+        "PoppinsMedium",
+        "normal"
+      );
+    } else {
+      doc.setFont(
+        "helvetica",
+        "normal"
+      );
+    }
+  };
+
+  const poppinsBoldFont = () => {
+    if (poppinsExtraBoldLoaded) {
+      doc.setFont(
+        "PoppinsExtraBold",
+        "bold"
+      );
+    } else {
+      doc.setFont(
+        "helvetica",
+        "bold"
+      );
+    }
+  };
+
+  const podkovaFont = () => {
+    if (podkovaLoaded) {
+      doc.setFont(
+        "Podkova",
+        "bold"
+      );
+    } else {
+      doc.setFont(
+        "helvetica",
+        "bold"
+      );
+    }
+  };
+
+  const brilliantFont = () => {
     if (brilliantLoaded) {
       doc.setFont(
         "Brilliant",
@@ -357,7 +466,7 @@ export async function generateInvoicePDF({
   };
 
   // ==========================================================
-  // TOP BROWN BAR
+  // TOP BAR
   // ==========================================================
 
   doc.setFillColor(...BROWN);
@@ -372,9 +481,6 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // LOGO
-  //
-  // Exact filename:
-  // public/eatone-logo.png
   // ==========================================================
 
   try {
@@ -397,10 +503,9 @@ export async function generateInvoicePDF({
       error
     );
 
-    // Fallback brand text
-    boldFont();
+    leagueSpartanFont();
 
-    doc.setFontSize(27);
+    doc.setFontSize(26);
 
     doc.setTextColor(...BROWN);
 
@@ -409,27 +514,17 @@ export async function generateInvoicePDF({
       LINE_LEFT,
       29
     );
-
-    normalFont();
-
-    doc.setFontSize(10);
-
-    doc.text(
-      BRAND_TAGLINE,
-      LINE_LEFT,
-      37
-    );
   }
 
   // ==========================================================
   // DATE
-  // League Spartan Bold
+  // LEAGUE SPARTAN
   // ==========================================================
 
   const invoiceDate =
     formatInvoiceDate();
 
-  boldFont();
+  leagueSpartanFont();
 
   doc.setTextColor(...BROWN);
 
@@ -446,8 +541,10 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // INVOICE NUMBER
-  // League Spartan Bold
+  // LEAGUE SPARTAN
   // ==========================================================
+
+  leagueSpartanFont();
 
   doc.setFontSize(11);
 
@@ -462,7 +559,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // STATUS
-  // League Spartan Bold
+  // LEAGUE SPARTAN
   // ==========================================================
 
   let displayStatus =
@@ -474,6 +571,8 @@ export async function generateInvoicePDF({
   ) {
     displayStatus = "Paid";
   }
+
+  leagueSpartanFont();
 
   doc.setFontSize(11);
 
@@ -487,7 +586,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FIRST HORIZONTAL LINE
+  // FIRST DIVIDER
   // ==========================================================
 
   let y = 52;
@@ -504,12 +603,12 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // BILLED TO
-  // League Spartan Bold
+  // LEAGUE SPARTAN
   // ==========================================================
 
   y += 11;
 
-  boldFont();
+  leagueSpartanFont();
 
   doc.setFontSize(12);
 
@@ -521,12 +620,12 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER NAME
-  // Poppins
+  // POPPINS MEDIUM
   // ==========================================================
 
   y += 8;
 
-  normalFont();
+  poppinsMediumFont();
 
   doc.setFontSize(10.5);
 
@@ -540,7 +639,7 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // CUSTOMER ADDRESS
-  // Poppins
+  // POPPINS MEDIUM
   // ==========================================================
 
   y += 7;
@@ -553,7 +652,6 @@ export async function generateInvoicePDF({
   let fullAddress =
     String(address);
 
-  // Add pincode only if it isn't already in the address
   if (
     safeCustomer.pincode &&
     !String(address).includes(
@@ -572,6 +670,8 @@ export async function generateInvoicePDF({
       175
     );
 
+  poppinsMediumFont();
+
   doc.text(
     addressLines,
     LINE_LEFT,
@@ -585,8 +685,8 @@ export async function generateInvoicePDF({
     ) * 6;
 
   // ==========================================================
-  // PHONE NUMBER
-  // Poppins
+  // PHONE
+  // POPPINS MEDIUM
   // ==========================================================
 
   let customerPhone =
@@ -594,13 +694,13 @@ export async function generateInvoicePDF({
 
   if (
     customerPhone !== "-" &&
-    !String(
-      customerPhone
-    ).startsWith("+")
+    !String(customerPhone).startsWith("+")
   ) {
     customerPhone =
       `+91 ${customerPhone}`;
   }
+
+  poppinsMediumFont();
 
   doc.text(
     String(customerPhone),
@@ -610,11 +710,13 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // ORDER ID
-  // Poppins
+  // POPPINS MEDIUM
   // ==========================================================
 
   if (orderId) {
     y += 6;
+
+    poppinsMediumFont();
 
     doc.text(
       `Order ID: ${orderId}`,
@@ -624,7 +726,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // CUSTOMER SECTION LINE
+  // CUSTOMER DIVIDER
   // ==========================================================
 
   y += 9;
@@ -640,19 +742,16 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // TABLE
+  // TABLE HEADER
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
   y += 18;
 
-  // ==========================================================
-  // TABLE HEADER
-  // League Spartan Bold
-  // ==========================================================
-
-  boldFont();
+  poppinsBoldFont();
 
   doc.setFontSize(10);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -683,7 +782,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // TABLE HEADER LINE
+  // TABLE HEADER DIVIDER
   // ==========================================================
 
   y += 6;
@@ -698,32 +797,28 @@ export async function generateInvoicePDF({
     y
   );
 
-  // Space before first row
   y += 11;
 
   // ==========================================================
-  // PRODUCT / SHIPPING ROWS
-  // Poppins
+  // PRODUCT ROWS
+  // POPPINS MEDIUM
   // ==========================================================
 
-  normalFont();
+  poppinsMediumFont();
 
   doc.setFontSize(9.5);
 
   safeItems.forEach(
     (row, index) => {
       const description =
-        row?.description ||
-        "-";
+        row?.description || "-";
 
       const category =
-        row?.category ||
-        "-";
+        row?.category || "-";
 
       const quantity =
         String(
-          row?.quantity ||
-          "-"
+          row?.quantity || "-"
         );
 
       const amount =
@@ -733,10 +828,6 @@ export async function generateInvoicePDF({
               row.amount
             )}`
           : "-";
-
-      // ======================================================
-      // WRAP LONG TEXT
-      // ======================================================
 
       const descriptionLines =
         doc.splitTextToSize(
@@ -764,9 +855,7 @@ export async function generateInvoicePDF({
           1
         );
 
-      // ======================================================
-      // DRAW DESCRIPTION
-      // ======================================================
+      poppinsMediumFont();
 
       doc.text(
         descriptionLines,
@@ -774,29 +863,17 @@ export async function generateInvoicePDF({
         y
       );
 
-      // ======================================================
-      // DRAW CATEGORY
-      // ======================================================
-
       doc.text(
         categoryLines,
         CATEGORY_X,
         y
       );
 
-      // ======================================================
-      // DRAW QUANTITY
-      // ======================================================
-
       doc.text(
         quantityLines,
         QUANTITY_X,
         y
       );
-
-      // ======================================================
-      // DRAW AMOUNT
-      // ======================================================
 
       doc.text(
         amount,
@@ -807,10 +884,6 @@ export async function generateInvoicePDF({
         }
       );
 
-      // ======================================================
-      // ROW HEIGHT
-      // ======================================================
-
       const rowHeight =
         Math.max(
           13,
@@ -818,10 +891,6 @@ export async function generateInvoicePDF({
         );
 
       y += rowHeight;
-
-      // ======================================================
-      // LIGHT ROW SEPARATOR
-      // ======================================================
 
       if (
         index <
@@ -865,12 +934,12 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // TOTAL
-  // League Spartan Bold
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
   y += 12;
 
-  boldFont();
+  poppinsBoldFont();
 
   doc.setFontSize(11);
 
@@ -880,10 +949,15 @@ export async function generateInvoicePDF({
     y
   );
 
+  // ==========================================================
+  // TOTAL PRICE
+  // POPPINS EXTRA BOLD
+  // ==========================================================
+
+  poppinsBoldFont();
+
   doc.text(
-    `Rs. ${formatMoney(
-      safeTotal
-    )}`,
+    `Rs. ${formatMoney(safeTotal)}`,
     AMOUNT_X,
     y,
     {
@@ -908,7 +982,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // OPTIONAL DELIVERY / TRACKING INFORMATION
+  // OPTIONAL SHIPPING DETAILS
   // ==========================================================
 
   if (
@@ -917,7 +991,7 @@ export async function generateInvoicePDF({
   ) {
     y += 11;
 
-    boldFont();
+    poppinsBoldFont();
 
     doc.setFontSize(10);
 
@@ -929,7 +1003,7 @@ export async function generateInvoicePDF({
 
     y += 7;
 
-    normalFont();
+    poppinsMediumFont();
 
     doc.setFontSize(9);
 
@@ -955,23 +1029,23 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // BRAND TAGLINE
-  // League Spartan Bold
+  // HEALTHY DELIGHT EVERYDAY
+  // PODKOVA BOLD
   // ==========================================================
 
   y = Math.max(
-    y + 18,
-    195
+    y + 16,
+    190
   );
 
-  // Prevent footer from being pushed too far down
-  if (y > 215) {
-    y = 215;
+  if (y > 198) {
+    y = 198;
   }
 
-  boldFont();
+  podkovaFont();
 
-  doc.setFontSize(11);
+  doc.setFontSize(12);
+
   doc.setTextColor(...BROWN);
 
   doc.text(
@@ -984,7 +1058,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // LINE ABOVE ISSUED BY
+  // DIVIDER ABOVE ISSUED BY
   // ==========================================================
 
   y += 12;
@@ -1001,14 +1075,16 @@ export async function generateInvoicePDF({
 
   // ==========================================================
   // ISSUED BY
-  // League Spartan Bold
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
   y += 13;
 
-  boldFont();
+  poppinsBoldFont();
 
   doc.setFontSize(11);
+
+  doc.setTextColor(...BROWN);
 
   doc.text(
     "Issued By",
@@ -1017,13 +1093,13 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FOUNDER NAME - LEFT SIDE
-  // League Spartan Bold
+  // FOUNDER NAME LEFT
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
   y += 8;
 
-  boldFont();
+  poppinsBoldFont();
 
   doc.setFontSize(11);
 
@@ -1034,13 +1110,13 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FSSAI LICENSE
-  // Poppins
+  // FSSAI
+  // POPPINS MEDIUM
   // ==========================================================
 
   y += 7;
 
-  normalFont();
+  poppinsMediumFont();
 
   doc.setFontSize(9);
 
@@ -1051,17 +1127,19 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // SIGNATURE - RIGHT SIDE
-  // Brilliant.ttf
+  // SIGNATURE
+  // BRILLIANT
   // ==========================================================
 
   const signatureY =
-    y - 10;
+    y - 13;
 
-  signatureFont();
+  brilliantFont();
+
+  doc.setTextColor(...BROWN);
 
   if (brilliantLoaded) {
-    doc.setFontSize(17);
+    doc.setFontSize(19);
   } else {
     doc.setFontSize(14);
   }
@@ -1080,9 +1158,10 @@ export async function generateInvoicePDF({
   // ==========================================================
 
   const signatureLineY =
-    signatureY + 6;
+    signatureY + 7;
 
   doc.setDrawColor(...BROWN);
+
   doc.setLineWidth(0.3);
 
   doc.line(
@@ -1093,11 +1172,11 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FOUNDER ROLE
-  // League Spartan Bold
+  // FOUNDER
+  // POPPINS EXTRA BOLD
   // ==========================================================
 
-  boldFont();
+  poppinsBoldFont();
 
   doc.setFontSize(10);
 
