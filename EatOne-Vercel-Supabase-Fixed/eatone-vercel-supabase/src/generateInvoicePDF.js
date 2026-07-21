@@ -14,8 +14,6 @@ const GREEN = [63, 109, 62];
 const BRAND_TAGLINE = "Healthy Delight Everyday";
 const FSSAI_NUMBER = "21226008002884";
 
-const SIGNATURE_NAME = "Manisha D Shetty";
-
 // ============================================================
 // LOAD FILE AS BASE64
 // ============================================================
@@ -151,7 +149,7 @@ export async function generateInvoicePDF({
   const TAGLINE_TOP_GAP = 18;
 
   // ==========================================================
-  // FOOTER
+  // FOOTER POSITIONS
   // ==========================================================
 
   const FOOTER_LINE_Y = 241;
@@ -161,24 +159,37 @@ export async function generateInvoicePDF({
   const FOOTER_FSSAI_Y = 268;
 
   // ==========================================================
-  // SIGNATURE
+  // SIGNATURE POSITIONS
   // ==========================================================
 
   const SIGNATURE_LINE_START_X = 142;
   const SIGNATURE_LINE_END_X = 196;
 
   const SIGNATURE_CENTER_X =
-    (SIGNATURE_LINE_START_X +
-      SIGNATURE_LINE_END_X) /
-    2;
+    (SIGNATURE_LINE_START_X + SIGNATURE_LINE_END_X) / 2;
 
-  // Signature text is above this line
   const SIGNATURE_LINE_Y = 261;
 
-  // Signature baseline
-  const SIGNATURE_TEXT_Y = 255;
+  // ==========================================================
+  // SIGNATURE IMAGE SETTINGS
+  //
+  // signature.png is in public folder.
+  //
+  // Image will appear ABOVE signature line.
+  // ==========================================================
 
-  // Founder below signature line
+  const SIGNATURE_IMAGE_WIDTH = 46;
+  const SIGNATURE_IMAGE_HEIGHT = 12;
+
+  const SIGNATURE_IMAGE_X =
+    SIGNATURE_CENTER_X - SIGNATURE_IMAGE_WIDTH / 2;
+
+  const SIGNATURE_IMAGE_Y = 246;
+
+  // ==========================================================
+  // FOUNDER
+  // ==========================================================
+
   const FOUNDER_ROLE_Y = 269;
 
   // ==========================================================
@@ -186,7 +197,6 @@ export async function generateInvoicePDF({
   // ==========================================================
 
   const TOP_BAR_HEIGHT = 10;
-
   const BOTTOM_BAR_HEIGHT = 10;
 
   const BOTTOM_BAR_Y =
@@ -227,10 +237,9 @@ export async function generateInvoicePDF({
   let poppinsMediumLoaded = false;
   let poppinsExtraBoldLoaded = false;
   let podkovaLoaded = false;
-  let brilliantLoaded = false;
 
   // ==========================================================
-  // LEAGUE SPARTAN
+  // LOAD LEAGUE SPARTAN
   // ==========================================================
 
   try {
@@ -255,9 +264,7 @@ export async function generateInvoicePDF({
       "bold"
     );
 
-    doc.getTextWidth(
-      "League Spartan"
-    );
+    doc.getTextWidth("League Spartan");
 
     leagueSpartanLoaded = true;
 
@@ -272,7 +279,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // POPPINS MEDIUM
+  // LOAD POPPINS MEDIUM
   // ==========================================================
 
   try {
@@ -297,9 +304,7 @@ export async function generateInvoicePDF({
       "normal"
     );
 
-    doc.getTextWidth(
-      "Poppins Medium"
-    );
+    doc.getTextWidth("Poppins Medium");
 
     poppinsMediumLoaded = true;
 
@@ -314,7 +319,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // POPPINS EXTRA BOLD
+  // LOAD POPPINS EXTRA BOLD
   // ==========================================================
 
   try {
@@ -339,9 +344,7 @@ export async function generateInvoicePDF({
       "bold"
     );
 
-    doc.getTextWidth(
-      "Poppins ExtraBold"
-    );
+    doc.getTextWidth("Poppins ExtraBold");
 
     poppinsExtraBoldLoaded = true;
 
@@ -356,7 +359,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // PODKOVA BOLD
+  // LOAD PODKOVA
   // ==========================================================
 
   try {
@@ -381,9 +384,7 @@ export async function generateInvoicePDF({
       "bold"
     );
 
-    doc.getTextWidth(
-      BRAND_TAGLINE
-    );
+    doc.getTextWidth(BRAND_TAGLINE);
 
     podkovaLoaded = true;
 
@@ -393,59 +394,6 @@ export async function generateInvoicePDF({
   } catch (error) {
     console.error(
       "Podkova failed:",
-      error
-    );
-  }
-
-  // ==========================================================
-  // BRILLIANT SIGNATURE FONT
-  //
-  // IMPORTANT:
-  // Identity-H REMOVED
-  //
-  // File:
-  // /public/Brilliant.ttf
-  // ==========================================================
-
-  try {
-    const brilliantBase64 =
-      await loadFileAsBase64(
-        "/Brilliant.ttf"
-      );
-
-    doc.addFileToVFS(
-      "Brilliant.ttf",
-      brilliantBase64
-    );
-
-    // IMPORTANT:
-    // NO Identity-H here
-    doc.addFont(
-      "Brilliant.ttf",
-      "BrilliantSignature",
-      "normal"
-    );
-
-    doc.setFont(
-      "BrilliantSignature",
-      "normal"
-    );
-
-    // Test the exact signature name
-    doc.getTextWidth(
-      SIGNATURE_NAME
-    );
-
-    brilliantLoaded = true;
-
-    console.log(
-      "Brilliant signature font loaded successfully"
-    );
-  } catch (error) {
-    brilliantLoaded = false;
-
-    console.error(
-      "Brilliant signature font failed:",
       error
     );
   }
@@ -543,7 +491,7 @@ export async function generateInvoicePDF({
   };
 
   // ==========================================================
-  // STANDARD HORIZONTAL LINE
+  // DRAW STANDARD LINE
   // ==========================================================
 
   const drawMainLine = (lineY) => {
@@ -560,16 +508,14 @@ export async function generateInvoicePDF({
   };
 
   // ==========================================================
-  // TABLE HEADER
+  // DRAW TABLE HEADER
   // ==========================================================
 
-  const drawTableHeader = (
-    startingY
-  ) => {
+  const drawTableHeader = (startingY) => {
     // Top line
     drawMainLine(startingY);
 
-    // Heading text exactly 8 mm below
+    // Text is 8 mm below top line
     const HEADER_TEXT_Y =
       startingY + 8;
 
@@ -628,7 +574,6 @@ export async function generateInvoicePDF({
   const createContinuationPage = () => {
     doc.addPage();
 
-    // Same brown and green borders
     drawTopBar();
     drawBottomBar();
 
@@ -639,9 +584,7 @@ export async function generateInvoicePDF({
     doc.setTextColor(...BROWN);
 
     doc.text(
-      `Invoice No. ${
-        invoiceNo || "-"
-      }`,
+      `Invoice No. ${invoiceNo || "-"}`,
       LINE_LEFT,
       24
     );
@@ -655,9 +598,7 @@ export async function generateInvoicePDF({
       }
     );
 
-    return drawTableHeader(
-      34
-    );
+    return drawTableHeader(34);
   };
 
   // ==========================================================
@@ -677,9 +618,7 @@ export async function generateInvoicePDF({
     doc.setTextColor(...BROWN);
 
     doc.text(
-      `Invoice No. ${
-        invoiceNo || "-"
-      }`,
+      `Invoice No. ${invoiceNo || "-"}`,
       LINE_LEFT,
       24
     );
@@ -771,9 +710,7 @@ export async function generateInvoicePDF({
   doc.setFontSize(11);
 
   doc.text(
-    `Invoice No. ${
-      invoiceNo || "-"
-    }`,
+    `Invoice No. ${invoiceNo || "-"}`,
     LINE_RIGHT,
     28,
     {
@@ -853,7 +790,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // ADDRESS
+  // CUSTOMER ADDRESS
   // ==========================================================
 
   y += 7;
@@ -897,7 +834,7 @@ export async function generateInvoicePDF({
     ) * 6;
 
   // ==========================================================
-  // PHONE
+  // PHONE NUMBER
   // ==========================================================
 
   let customerPhone =
@@ -975,7 +912,7 @@ export async function generateInvoicePDF({
         : "-";
 
     // ========================================================
-    // WRAP ROW TEXT
+    // WRAP TEXT
     // ========================================================
 
     poppinsMediumFont();
@@ -1000,6 +937,10 @@ export async function generateInvoicePDF({
         34
       );
 
+    // ========================================================
+    // CALCULATE ROW HEIGHT
+    // ========================================================
+
     const maximumLines =
       Math.max(
         descriptionLines.length,
@@ -1019,7 +960,7 @@ export async function generateInvoicePDF({
       safeItems.length - 1;
 
     // ========================================================
-    // PAGE BREAK
+    // PAGE BREAK CHECK
     // ========================================================
 
     if (isLastItem) {
@@ -1084,7 +1025,7 @@ export async function generateInvoicePDF({
     y += rowHeight;
 
     // ========================================================
-    // ROW SEPARATOR
+    // PRODUCT SEPARATOR
     // ========================================================
 
     if (!isLastItem) {
@@ -1106,7 +1047,7 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
-  // FINAL SECTION FIT CHECK
+  // CHECK FINAL SECTION FIT
   // ==========================================================
 
   if (
@@ -1144,9 +1085,7 @@ export async function generateInvoicePDF({
   );
 
   doc.text(
-    `Rs. ${formatMoney(
-      safeTotal
-    )}`,
+    `Rs. ${formatMoney(safeTotal)}`,
     AMOUNT_X,
     y,
     {
@@ -1155,7 +1094,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // TOTAL BOTTOM LINE
+  // LINE BELOW TOTAL
   // ==========================================================
 
   y += TOTAL_BOTTOM_GAP;
@@ -1185,9 +1124,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // ONLY ONE FOOTER DIVIDER
-  //
-  // No additional line directly below tagline.
+  // SINGLE FOOTER DIVIDER
   // ==========================================================
 
   drawMainLine(
@@ -1212,7 +1149,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FOUNDER NAME - LEFT
+  // FOUNDER NAME - LEFT SIDE
   // ==========================================================
 
   poppinsBoldFont();
@@ -1226,7 +1163,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // FSSAI
+  // FSSAI NUMBER
   // ==========================================================
 
   poppinsMediumFont();
@@ -1240,45 +1177,43 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // SIGNATURE
+  // SIGNATURE IMAGE
   //
-  // EXACT TEXT:
-  // Manisha D Shetty
+  // FILE:
+  // public/signature.png
   //
-  // FONT:
-  // BrilliantSignature
-  //
-  // SIZE:
-  // 22
+  // No Brilliant.ttf required anymore.
   // ==========================================================
 
-  doc.setTextColor(...BROWN);
+  try {
+    const signatureImage =
+      await loadImageAsDataURL(
+        "/signature.png"
+      );
 
-  if (brilliantLoaded) {
-    // ========================================================
-    // BRILLIANT SIGNATURE
-    // ========================================================
-
-    doc.setFont(
-      "BrilliantSignature",
-      "normal"
+    doc.addImage(
+      signatureImage,
+      "PNG",
+      SIGNATURE_IMAGE_X,
+      SIGNATURE_IMAGE_Y,
+      SIGNATURE_IMAGE_WIDTH,
+      SIGNATURE_IMAGE_HEIGHT
     );
 
-    doc.setFontSize(22);
-
-    doc.text(
-      "Manisha D Shetty",
-      SIGNATURE_CENTER_X,
-      SIGNATURE_TEXT_Y,
-      {
-        align: "center",
-      }
+    console.log(
+      "Signature image loaded successfully"
     );
-  } else {
+  } catch (error) {
+    console.error(
+      "Signature image failed:",
+      error
+    );
+
     // ========================================================
     // FALLBACK
     //
-    // If Brilliant fails, the name will still appear.
+    // If signature.png cannot load,
+    // Manisha D Shetty will still appear.
     // ========================================================
 
     doc.setFont(
@@ -1288,10 +1223,12 @@ export async function generateInvoicePDF({
 
     doc.setFontSize(16);
 
+    doc.setTextColor(...BROWN);
+
     doc.text(
       "Manisha D Shetty",
       SIGNATURE_CENTER_X,
-      SIGNATURE_TEXT_Y,
+      255,
       {
         align: "center",
       }
@@ -1317,8 +1254,7 @@ export async function generateInvoicePDF({
   // FOUNDER
   //
   // POPPINS EXTRA BOLD
-  // SIZE 17
-  // CENTERED WITH SIGNATURE LINE
+  // FONT SIZE = 17
   // ==========================================================
 
   poppinsBoldFont();
@@ -1337,7 +1273,7 @@ export async function generateInvoicePDF({
   );
 
   // ==========================================================
-  // ENSURE BOTTOM GREEN BORDER
+  // MAKE SURE GREEN BORDER IS PRESENT
   // ==========================================================
 
   drawBottomBar();
