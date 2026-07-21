@@ -1,115 +1,64 @@
 import jsPDF from "jspdf";
 
 // ============================================================
-// BRAND
+// EAT ONE BRAND SETTINGS
 // ============================================================
 
 const BROWN = [42, 32, 22];
 const GREEN = [63, 109, 62];
 
-const BRAND_TAGLINE =
-  "Healthy Delight Everyday";
+const BRAND_TAGLINE = "Healthy Delight Everyday";
 
-const FSSAI_NUMBER =
-  "21226008002884";
+const FSSAI_NUMBER = "21226008002884";
 
 // ============================================================
-// LOAD FILE AS BASE64
+// LOAD IMAGE AS DATA URL
 // ============================================================
 
-async function loadFileAsBase64(
-  url
-) {
-  const response =
-    await fetch(url);
+async function loadImageAsDataURL(url) {
+  const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(
-      `Could not load file: ${url}`
-    );
+    throw new Error(`Could not load image: ${url}`);
   }
 
-  const buffer =
-    await response.arrayBuffer();
+  const blob = await response.blob();
 
-  const bytes =
-    new Uint8Array(buffer);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-  let binary = "";
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
 
-  for (
-    let i = 0;
-    i < bytes.length;
-    i++
-  ) {
-    binary +=
-      String.fromCharCode(
-        bytes[i]
-      );
-  }
+    reader.onerror = reject;
 
-  return btoa(binary);
-}
-
-// ============================================================
-// LOAD IMAGE
-// ============================================================
-
-async function loadImageAsDataURL(
-  url
-) {
-  const response =
-    await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(
-      `Could not load image: ${url}`
-    );
-  }
-
-  const blob =
-    await response.blob();
-
-  return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-      const reader =
-        new FileReader();
-
-      reader.onloadend =
-        () =>
-          resolve(
-            reader.result
-          );
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(
-        blob
-      );
-    }
-  );
+    reader.readAsDataURL(blob);
+  });
 }
 
 // ============================================================
 // FORMAT MONEY
 // ============================================================
 
-function formatMoney(
-  value
-) {
-  return Number(
-    value || 0
-  ).toLocaleString(
-    "en-IN"
-  );
+function formatMoney(value) {
+  return Number(value || 0).toLocaleString("en-IN");
 }
 
 // ============================================================
-// GENERATE INVOICE
+// FORMAT DATE
+// ============================================================
+
+function formatInvoiceDate() {
+  return new Date().toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+// ============================================================
+// GENERATE INVOICE PDF
 // ============================================================
 
 export async function generateInvoicePDF({
@@ -127,181 +76,63 @@ export async function generateInvoicePDF({
   // CREATE PDF
   // ==========================================================
 
-  const doc =
-    new jsPDF({
-      orientation:
-        "portrait",
-
-      unit:
-        "mm",
-
-      format:
-        "a4",
-    });
-
-  const pageWidth =
-    210;
-
-  const pageHeight =
-    297;
-
-  const safeCustomer =
-    customer || {};
-
-  const safeItems =
-    Array.isArray(items)
-      ? items
-      : [];
-
-  const safeTotal =
-    Number(
-      total || 0
-    );
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
   // ==========================================================
-  // LOAD POPPINS
+  // PAGE SETTINGS
   // ==========================================================
 
-  let poppinsLoaded =
-    false;
+  const pageWidth = 210;
+  const pageHeight = 297;
 
-  try {
-    const poppinsBase64 =
-      await loadFileAsBase64(
-        "/Poppins-Medium.ttf"
-      );
+  const leftMargin = 14;
+  const rightMargin = 196;
 
-    doc.addFileToVFS(
-      "Poppins-Medium.ttf",
-      poppinsBase64
-    );
+  const safeCustomer = customer || {};
 
-    doc.addFont(
-      "Poppins-Medium.ttf",
-      "Poppins",
-      "normal"
-    );
+  const safeItems = Array.isArray(items)
+    ? items
+    : [];
 
-    poppinsLoaded =
-      true;
-  } catch (error) {
-    console.error(
-      "Poppins font failed:",
-      error
-    );
-  }
+  const safeTotal = Number(total || 0);
 
-  // ==========================================================
-  // LOAD LEAGUE SPARTAN BOLD
-  // ==========================================================
-
-  let leagueSpartanLoaded =
-    false;
-
-  try {
-    const spartanBase64 =
-      await loadFileAsBase64(
-        "/LeagueSpartan-Bold.ttf"
-      );
-
-    doc.addFileToVFS(
-      "LeagueSpartan-Bold.ttf",
-      spartanBase64
-    );
-
-    doc.addFont(
-      "LeagueSpartan-Bold.ttf",
-      "LeagueSpartan",
-      "bold"
-    );
-
-    leagueSpartanLoaded =
-      true;
-  } catch (error) {
-    console.error(
-      "League Spartan font failed:",
-      error
-    );
-  }
-
-  // ==========================================================
-  // LOAD BRILLIANT
-  // ==========================================================
-
-  let brilliantLoaded =
-    false;
-
-  try {
-    const brilliantBase64 =
-      await loadFileAsBase64(
-        "/Brilliant.ttf"
-      );
-
-    doc.addFileToVFS(
-      "Brilliant.ttf",
-      brilliantBase64
-    );
-
-    doc.addFont(
-      "Brilliant.ttf",
-      "Brilliant",
-      "normal"
-    );
-
-    brilliantLoaded =
-      true;
-  } catch (error) {
-    console.error(
-      "Brilliant font failed:",
-      error
-    );
-  }
+  const safeFounderName =
+    founderName || "Manisha D Shetty";
 
   // ==========================================================
   // FONT HELPERS
+  //
+  // IMPORTANT:
+  // We are temporarily using ONLY built-in jsPDF fonts.
+  //
+  // This prevents the:
+  //
+  // Cannot read properties of undefined (reading 'widths')
+  //
+  // error caused by problematic custom TTF registration.
   // ==========================================================
 
-  const normalFont =
-    () => {
-      if (
-        poppinsLoaded
-      ) {
-        doc.setFont(
-          "Poppins",
-          "normal"
-        );
-      } else {
-        doc.setFont(
-          "helvetica",
-          "normal"
-        );
-      }
-    };
+  const normalFont = () => {
+    doc.setFont("helvetica", "normal");
+  };
 
-  const boldFont =
-    () => {
-      if (
-        leagueSpartanLoaded
-      ) {
-        doc.setFont(
-          "LeagueSpartan",
-          "bold"
-        );
-      } else {
-        doc.setFont(
-          "helvetica",
-          "bold"
-        );
-      }
-    };
+  const boldFont = () => {
+    doc.setFont("helvetica", "bold");
+  };
+
+  const italicFont = () => {
+    doc.setFont("helvetica", "oblique");
+  };
 
   // ==========================================================
   // TOP BROWN BORDER
   // ==========================================================
 
-  doc.setFillColor(
-    ...BROWN
-  );
+  doc.setFillColor(...BROWN);
 
   doc.rect(
     0,
@@ -325,110 +156,96 @@ export async function generateInvoicePDF({
       logo,
       "PNG",
       14,
-      13,
-      85,
-      38
+      14,
+      82,
+      34
     );
   } catch (error) {
     console.error(
-      "Logo failed:",
+      "Logo loading failed:",
       error
     );
 
+    // --------------------------------------------------------
+    // FALLBACK IF LOGO CANNOT LOAD
+    // --------------------------------------------------------
+
     boldFont();
 
-    doc.setFontSize(
-      25
-    );
+    doc.setFontSize(27);
 
-    doc.setTextColor(
-      ...BROWN
-    );
+    doc.setTextColor(...BROWN);
 
     doc.text(
       "EAT ONE",
-      14,
-      30
+      leftMargin,
+      29
     );
 
     normalFont();
 
-    doc.setFontSize(
-      10
-    );
+    doc.setFontSize(10);
 
     doc.text(
       BRAND_TAGLINE,
-      14,
-      38
+      leftMargin,
+      37
     );
   }
 
   // ==========================================================
-  // DATE
+  // DATE / INVOICE NUMBER / STATUS
   // ==========================================================
 
-  const dateStr =
-    new Date()
-      .toLocaleDateString(
-        "en-IN",
-        {
-          day:
-            "2-digit",
-
-          month:
-            "long",
-
-          year:
-            "numeric",
-        }
-      );
-
-  // ==========================================================
-  // TOP RIGHT INFORMATION
-  // ==========================================================
+  const invoiceDate =
+    formatInvoiceDate();
 
   boldFont();
 
-  doc.setTextColor(
-    ...BROWN
-  );
+  doc.setTextColor(...BROWN);
 
-  doc.setFontSize(
-    11
-  );
+  // ----------------------------------------------------------
+  // DATE
+  // ----------------------------------------------------------
+
+  doc.setFontSize(12);
 
   doc.text(
-    dateStr,
-    196,
+    invoiceDate,
+    rightMargin,
     20,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
+  // ----------------------------------------------------------
+  // INVOICE NUMBER
+  // ----------------------------------------------------------
+
+  doc.setFontSize(11);
+
   doc.text(
-    `Invoice No. ${
-      invoiceNo || "-"
-    }`,
-    196,
-    27,
+    `Invoice No. ${invoiceNo || "-"}`,
+    rightMargin,
+    28,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
+  // ----------------------------------------------------------
+  // STATUS
+  // ----------------------------------------------------------
+
+  doc.setFontSize(11);
+
   doc.text(
-    `Status: ${
-      status || "Paid"
-    }`,
-    196,
-    34,
+    `Status: ${status || "Paid"}`,
+    rightMargin,
+    36,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
@@ -436,80 +253,72 @@ export async function generateInvoicePDF({
   // FIRST DIVIDER
   // ==========================================================
 
-  let y = 48;
+  let y = 52;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  doc.setDrawColor(...BROWN);
 
-  doc.setLineWidth(
-    0.4
-  );
+  doc.setLineWidth(0.4);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
-
-  y += 10;
 
   // ==========================================================
   // BILLED TO
   // ==========================================================
 
+  y += 11;
+
   boldFont();
 
-  doc.setFontSize(
-    13
-  );
+  doc.setFontSize(12);
 
   doc.text(
     "Billed to:",
-    14,
+    leftMargin,
     y
   );
+
+  // ==========================================================
+  // CUSTOMER NAME
+  // ==========================================================
 
   y += 8;
 
-  // Customer name
-
   normalFont();
 
-  doc.setFontSize(
-    10.5
-  );
+  doc.setFontSize(10.5);
 
   doc.text(
-    safeCustomer.name ||
-      "-",
-    14,
+    safeCustomer.name || "-",
+    leftMargin,
     y
   );
-
-  y += 7;
 
   // ==========================================================
   // CUSTOMER ADDRESS
   // ==========================================================
+
+  y += 7;
 
   const address =
     safeCustomer.line ||
     safeCustomer.address ||
     "-";
 
-  let fullAddress =
-    address;
+  let fullAddress = address;
+
+  // ----------------------------------------------------------
+  // ADD PINCODE IF NOT ALREADY PRESENT
+  // ----------------------------------------------------------
 
   if (
     safeCustomer.pincode &&
-    !String(
-      address
-    ).includes(
-      String(
-        safeCustomer.pincode
-      )
+    !String(address).includes(
+      String(safeCustomer.pincode)
     )
   ) {
     fullAddress =
@@ -519,12 +328,12 @@ export async function generateInvoicePDF({
   const addressLines =
     doc.splitTextToSize(
       fullAddress,
-      180
+      175
     );
 
   doc.text(
     addressLines,
-    14,
+    leftMargin,
     y
   );
 
@@ -535,53 +344,71 @@ export async function generateInvoicePDF({
     ) * 6;
 
   // ==========================================================
-  // PHONE
+  // CUSTOMER PHONE
   // ==========================================================
 
-  let phone =
-    safeCustomer.phone ||
-    "-";
+  let customerPhone =
+    safeCustomer.phone || "-";
 
   if (
-    phone !== "-" &&
-    !String(
-      phone
-    ).startsWith("+")
+    customerPhone !== "-" &&
+    !String(customerPhone).startsWith("+")
   ) {
-    phone =
-      `+91 ${phone}`;
+    customerPhone =
+      `+91 ${customerPhone}`;
   }
 
   doc.text(
-    phone,
-    14,
+    customerPhone,
+    leftMargin,
     y
   );
+
+  // ==========================================================
+  // ORDER ID
+  // ==========================================================
+
+  if (orderId) {
+    y += 6;
+
+    doc.text(
+      `Order ID: ${orderId}`,
+      leftMargin,
+      y
+    );
+  }
+
+  // ==========================================================
+  // CUSTOMER SECTION DIVIDER
+  // ==========================================================
 
   y += 9;
 
-  // Customer divider
+  doc.setDrawColor(...BROWN);
 
-  doc.setDrawColor(
-    ...BROWN
-  );
-
-  doc.setLineWidth(
-    0.3
-  );
+  doc.setLineWidth(0.3);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
 
   // ==========================================================
-  // TABLE START
+  // TABLE
   // ==========================================================
 
-  y += 20;
+  y += 18;
+
+  // ==========================================================
+  // TABLE COLUMN POSITIONS
+  // ==========================================================
+
+  const descriptionX = 14;
+  const categoryX = 88;
+  const quantityX = 132;
+  const amountX = 190;
 
   // ==========================================================
   // TABLE HEADER
@@ -589,62 +416,55 @@ export async function generateInvoicePDF({
 
   boldFont();
 
-  doc.setFontSize(
-    10
-  );
+  doc.setFontSize(10);
 
-  doc.setTextColor(
-    ...BROWN
-  );
+  doc.setTextColor(...BROWN);
 
   doc.text(
     "Description",
-    14,
+    descriptionX,
     y
   );
 
   doc.text(
     "Category",
-    88,
+    categoryX,
     y
   );
 
   doc.text(
     "Quantity",
-    132,
+    quantityX,
     y
   );
 
   doc.text(
     "Amount",
-    190,
+    amountX,
     y,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
-  // Header line
+  // ==========================================================
+  // TABLE HEADER LINE
+  // ==========================================================
 
   y += 5;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  doc.setDrawColor(...BROWN);
 
-  doc.setLineWidth(
-    0.35
-  );
+  doc.setLineWidth(0.4);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
 
-  y += 9;
+  y += 10;
 
   // ==========================================================
   // TABLE ITEMS
@@ -652,248 +472,253 @@ export async function generateInvoicePDF({
 
   normalFont();
 
-  doc.setFontSize(
-    9.5
-  );
+  doc.setFontSize(9.5);
 
-  safeItems.forEach(
-    (row) => {
-      const description =
-        row?.description ||
-        "-";
+  safeItems.forEach((row) => {
+    // --------------------------------------------------------
+    // GET VALUES
+    // --------------------------------------------------------
 
-      const category =
-        row?.category ||
-        "-";
+    const description =
+      row?.description || "-";
 
-      const quantity =
-        String(
-          row?.quantity ||
-          "-"
-        );
+    const category =
+      row?.category || "-";
 
-      const descriptionLines =
-        doc.splitTextToSize(
-          description,
-          65
-        );
-
-      const categoryLines =
-        doc.splitTextToSize(
-          category,
-          37
-        );
-
-      const quantityLines =
-        doc.splitTextToSize(
-          quantity,
-          35
-        );
-
-      const lineCount =
-        Math.max(
-          descriptionLines.length,
-          categoryLines.length,
-          quantityLines.length,
-          1
-        );
-
-      const rowHeight =
-        Math.max(
-          13,
-          lineCount *
-            6 +
-            5
-        );
-
-      // Description
-
-      doc.text(
-        descriptionLines,
-        14,
-        y
+    const quantity =
+      String(
+        row?.quantity || "-"
       );
 
-      // Category
+    const amount =
+      row?.amount !== undefined &&
+      row?.amount !== null
+        ? `Rs. ${formatMoney(row.amount)}`
+        : "-";
 
-      doc.text(
-        categoryLines,
-        88,
-        y
+    // --------------------------------------------------------
+    // WRAP LONG TEXT
+    // --------------------------------------------------------
+
+    const descriptionLines =
+      doc.splitTextToSize(
+        description,
+        65
       );
 
-      // Quantity
-
-      doc.text(
-        quantityLines,
-        132,
-        y
+    const categoryLines =
+      doc.splitTextToSize(
+        category,
+        36
       );
 
-      // Amount
-
-      const amount =
-        row?.amount !==
-          undefined &&
-        row?.amount !==
-          null
-          ? `Rs. ${formatMoney(
-              row.amount
-            )}`
-          : "-";
-
-      doc.text(
-        amount,
-        190,
-        y,
-        {
-          align:
-            "right",
-        }
+    const quantityLines =
+      doc.splitTextToSize(
+        quantity,
+        34
       );
 
-      // Move down
+    // --------------------------------------------------------
+    // CALCULATE ROW HEIGHT
+    // --------------------------------------------------------
 
-      y +=
-        rowHeight;
-
-      // ======================================================
-      // CLEAN ROW DIVIDER
-      // ======================================================
-
-      doc.setDrawColor(
-        190,
-        190,
-        190
+    const maximumLines =
+      Math.max(
+        descriptionLines.length,
+        categoryLines.length,
+        quantityLines.length,
+        1
       );
 
-      doc.setLineWidth(
-        0.2
+    const textHeight =
+      maximumLines * 5;
+
+    const rowHeight =
+      Math.max(
+        13,
+        textHeight + 5
       );
 
-      doc.line(
-        14,
-        y - 4,
-        196,
-        y - 4
-      );
-    }
-  );
+    // --------------------------------------------------------
+    // DESCRIPTION
+    // --------------------------------------------------------
+
+    doc.text(
+      descriptionLines,
+      descriptionX,
+      y
+    );
+
+    // --------------------------------------------------------
+    // CATEGORY
+    // --------------------------------------------------------
+
+    doc.text(
+      categoryLines,
+      categoryX,
+      y
+    );
+
+    // --------------------------------------------------------
+    // QUANTITY
+    // --------------------------------------------------------
+
+    doc.text(
+      quantityLines,
+      quantityX,
+      y
+    );
+
+    // --------------------------------------------------------
+    // AMOUNT
+    // --------------------------------------------------------
+
+    doc.text(
+      amount,
+      amountX,
+      y,
+      {
+        align: "right",
+      }
+    );
+
+    // --------------------------------------------------------
+    // MOVE TO BOTTOM OF ROW
+    // --------------------------------------------------------
+
+    y += rowHeight;
+
+    // --------------------------------------------------------
+    // ROW DIVIDER
+    // --------------------------------------------------------
+
+    doc.setDrawColor(
+      205,
+      205,
+      205
+    );
+
+    doc.setLineWidth(0.2);
+
+    doc.line(
+      leftMargin,
+      y - 4,
+      rightMargin,
+      y - 4
+    );
+  });
 
   // ==========================================================
-  // TOTAL
+  // TOTAL SECTION
   // ==========================================================
 
   y += 3;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  // ----------------------------------------------------------
+  // STRONG LINE BEFORE TOTAL
+  // ----------------------------------------------------------
 
-  doc.setLineWidth(
-    0.35
-  );
+  doc.setDrawColor(...BROWN);
+
+  doc.setLineWidth(0.4);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
 
-  y += 10;
+  // ----------------------------------------------------------
+  // TOTAL
+  // ----------------------------------------------------------
+
+  y += 11;
 
   boldFont();
 
-  doc.setFontSize(
-    11
-  );
+  doc.setFontSize(11);
 
   doc.text(
     "Total",
-    14,
+    leftMargin,
     y
   );
 
   doc.text(
-    `Rs. ${formatMoney(
-      safeTotal
-    )}`,
-    190,
+    `Rs. ${formatMoney(safeTotal)}`,
+    amountX,
     y,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
-  // Total bottom line
+  // ----------------------------------------------------------
+  // TOTAL BOTTOM LINE
+  // ----------------------------------------------------------
 
   y += 8;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  doc.setDrawColor(...BROWN);
 
-  doc.setLineWidth(
-    0.35
-  );
+  doc.setLineWidth(0.4);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
 
   // ==========================================================
-  // SHIPPING TRACKING DETAILS
+  // OPTIONAL SHIPPING / TRACKING INFORMATION
   // ==========================================================
 
   if (
     deliveryPartner ||
     trackingId
   ) {
-    y += 10;
+    y += 11;
 
     boldFont();
 
-    doc.setFontSize(
-      9.5
-    );
+    doc.setFontSize(10);
 
     doc.text(
       "Shipping Details",
-      14,
+      leftMargin,
       y
     );
 
-    y += 6;
+    y += 7;
 
     normalFont();
 
-    doc.setFontSize(
-      9
-    );
+    doc.setFontSize(9);
 
-    if (
-      deliveryPartner
-    ) {
+    // --------------------------------------------------------
+    // DELIVERY PARTNER
+    // --------------------------------------------------------
+
+    if (deliveryPartner) {
       doc.text(
         `Delivery Partner: ${deliveryPartner}`,
-        14,
+        leftMargin,
         y
       );
 
       y += 6;
     }
 
-    if (
-      trackingId
-    ) {
+    // --------------------------------------------------------
+    // TRACKING ID
+    // --------------------------------------------------------
+
+    if (trackingId) {
       doc.text(
         `Tracking ID: ${trackingId}`,
-        14,
+        leftMargin,
         y
       );
 
@@ -902,32 +727,35 @@ export async function generateInvoicePDF({
   }
 
   // ==========================================================
+  // TAGLINE POSITION
+  // ==========================================================
+
+  y = Math.max(
+    y + 20,
+    195
+  );
+
+  // Prevent footer from going too low
+  if (y > 220) {
+    y = 220;
+  }
+
+  // ==========================================================
   // BRAND TAGLINE
   // ==========================================================
 
-  y =
-    Math.max(
-      y + 20,
-      195
-    );
+  boldFont();
 
-  normalFont();
+  doc.setFontSize(11);
 
-  doc.setFontSize(
-    12
-  );
-
-  doc.setTextColor(
-    ...BROWN
-  );
+  doc.setTextColor(...BROWN);
 
   doc.text(
     BRAND_TAGLINE,
     pageWidth / 2,
     y,
     {
-      align:
-        "center",
+      align: "center",
     }
   );
 
@@ -937,18 +765,14 @@ export async function generateInvoicePDF({
 
   y += 12;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  doc.setDrawColor(...BROWN);
 
-  doc.setLineWidth(
-    0.3
-  );
+  doc.setLineWidth(0.3);
 
   doc.line(
-    14,
+    leftMargin,
     y,
-    196,
+    rightMargin,
     y
   );
 
@@ -956,107 +780,72 @@ export async function generateInvoicePDF({
   // ISSUED BY
   // ==========================================================
 
-  y += 14;
+  y += 13;
 
   boldFont();
 
-  doc.setFontSize(
-    11
-  );
+  doc.setFontSize(11);
 
   doc.text(
     "Issued By",
-    14,
+    leftMargin,
     y
   );
 
   // ==========================================================
-  // FOUNDER NAME LEFT
+  // FOUNDER NAME - LEFT SIDE
   // ==========================================================
 
   y += 8;
 
   boldFont();
 
-  doc.setFontSize(
-    11
-  );
+  doc.setFontSize(11);
 
   doc.text(
-    founderName ||
-      "Manisha D Shetty",
-    14,
+    safeFounderName,
+    leftMargin,
     y
   );
 
   // ==========================================================
-  // FSSAI NUMBER
+  // FSSAI LICENSE NUMBER
   // ==========================================================
 
   y += 7;
 
   normalFont();
 
-  doc.setFontSize(
-    9
-  );
+  doc.setFontSize(9);
 
   doc.text(
     `FSSAI License No: ${FSSAI_NUMBER}`,
-    14,
+    leftMargin,
     y
   );
 
   // ==========================================================
-  // SIGNATURE RIGHT SIDE
+  // SIGNATURE - RIGHT SIDE
+  //
+  // Built-in Helvetica Oblique is used temporarily.
+  // Once PDF works correctly, Brilliant.ttf can be tested again.
   // ==========================================================
 
   const signatureY =
-    y - 9;
+    y - 10;
 
-  if (
-    brilliantLoaded
-  ) {
-    doc.setFont(
-      "Brilliant",
-      "normal"
-    );
+  italicFont();
 
-    doc.setFontSize(
-      16
-    );
+  doc.setFontSize(15);
 
-    doc.text(
-      founderName ||
-        "Manisha D Shetty",
-      196,
-      signatureY,
-      {
-        align:
-          "right",
-      }
-    );
-  } else {
-    doc.setFont(
-      "helvetica",
-      "oblique"
-    );
-
-    doc.setFontSize(
-      12
-    );
-
-    doc.text(
-      founderName ||
-        "Manisha D Shetty",
-      196,
-      signatureY,
-      {
-        align:
-          "right",
-      }
-    );
-  }
+  doc.text(
+    safeFounderName,
+    rightMargin,
+    signatureY,
+    {
+      align: "right",
+    }
+  );
 
   // ==========================================================
   // SIGNATURE LINE
@@ -1065,18 +854,14 @@ export async function generateInvoicePDF({
   const signatureLineY =
     signatureY + 5;
 
-  doc.setDrawColor(
-    ...BROWN
-  );
+  doc.setDrawColor(...BROWN);
 
-  doc.setLineWidth(
-    0.3
-  );
+  doc.setLineWidth(0.3);
 
   doc.line(
     142,
     signatureLineY,
-    196,
+    rightMargin,
     signatureLineY
   );
 
@@ -1086,18 +871,14 @@ export async function generateInvoicePDF({
 
   boldFont();
 
-  doc.setFontSize(
-    11
-  );
+  doc.setFontSize(10);
 
   doc.text(
     "Founder",
-    196,
-    signatureLineY +
-      8,
+    rightMargin,
+    signatureLineY + 8,
     {
-      align:
-        "right",
+      align: "right",
     }
   );
 
@@ -1105,9 +886,7 @@ export async function generateInvoicePDF({
   // BOTTOM GREEN BORDER
   // ==========================================================
 
-  doc.setFillColor(
-    ...GREEN
-  );
+  doc.setFillColor(...GREEN);
 
   doc.rect(
     0,
@@ -1123,13 +902,10 @@ export async function generateInvoicePDF({
 
   const filename =
     `EatOne-Invoice-${
-      invoiceNo ||
-      "Invoice"
+      invoiceNo || "Invoice"
     }.pdf`;
 
-  doc.save(
-    filename
-  );
+  doc.save(filename);
 
   return true;
 }
