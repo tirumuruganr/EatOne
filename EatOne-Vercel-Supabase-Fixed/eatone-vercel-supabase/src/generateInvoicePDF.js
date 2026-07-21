@@ -178,13 +178,13 @@ export async function generateInvoicePDF({
   // Image will appear ABOVE signature line.
   // ==========================================================
 
-  const SIGNATURE_IMAGE_WIDTH = 75;
-  const SIGNATURE_IMAGE_HEIGHT = 25;
+  const SIGNATURE_IMAGE_WIDTH = 62;
+  const SIGNATURE_IMAGE_HEIGHT = 18;
 
   const SIGNATURE_IMAGE_X =
     SIGNATURE_CENTER_X - SIGNATURE_IMAGE_WIDTH / 2;
 
-  const SIGNATURE_IMAGE_Y = 225;
+  const SIGNATURE_IMAGE_Y = 241;
 
   // ==========================================================
   // FOUNDER
